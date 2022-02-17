@@ -1,7 +1,7 @@
 /*!
  *  dc 4.2.7
  *  http://dc-js.github.io/dc.js/
- *  Copyright 2012-2021 Nick Zhu & the dc.js Developers
+ *  Copyright 2012-2022 Nick Zhu & the dc.js Developers
  *  https://github.com/dc-js/dc.js/blob/master/AUTHORS
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -1310,7 +1310,7 @@
 
           this._transitionDelay = 0;
 
-          this._filterPrinter = printers.filters;
+          this._filterPrinter = printers.filterItem;
 
           this._mandatoryAttributesList = ['dimension', 'group'];
 
@@ -1823,7 +1823,25 @@
           if (this._root) {
               const attribute = this.controlsUseVisibility() ? 'visibility' : 'display';
               this.selectAll('.reset').style(attribute, null);
-              this.selectAll('.filter').text(this._filterPrinter(this.filters())).style(attribute, null);
+
+              const filterSelection = this.selectAll('.filter')
+                  .data(this.filters(), d=> d);
+
+              filterSelection.exit().remove();
+
+              filterSelection
+                  .enter()
+                  .append('span')
+                  .classed('filter', true)
+                  .html(d => this._filterPrinter(d))
+                  .select('.close').on('click', (ev, filter) => {
+                      if (this.hasFilter(filter)) {
+                                 events.trigger(() => {
+                                     this.filter(filter);
+                                     this.redrawGroup();
+                                 });
+                      }
+                  });
           }
           return this;
       }
@@ -1838,7 +1856,7 @@
               const attribute = this.controlsUseVisibility() ? 'visibility' : 'display';
               const value = this.controlsUseVisibility() ? 'hidden' : 'none';
               this.selectAll('.reset').style(attribute, value);
-              this.selectAll('.filter').style(attribute, value).text(this.filter());
+              this.selectAll('.filter').data(this.filters(), d => d).exit().remove();
           }
           return this;
       }
@@ -3519,7 +3537,7 @@
        * boundaries for the focus chart, so its dimension values must be compatible with the domain of
        * the focus chart.
        *
-       * See the [Nasdaq 100 Index](http://dc-js.github.com/dc.js/) example for this effect in action.
+       * See the [Nasdaq 100 Index](https://dc-js.github.io/dc.js/) example for this effect in action.
        * @param {CoordinateGridMixin} [rangeChart]
        * @returns {CoordinateGridMixin}
        */
@@ -5619,8 +5637,8 @@
    * Concrete bar chart/histogram implementation.
    *
    * Examples:
-   * - {@link http://dc-js.github.com/dc.js/ Nasdaq 100 Index}
-   * - {@link http://dc-js.github.com/dc.js/crime/index.html Canadian City Crime Stats}
+   * - {@link https://dc-js.github.io/dc.js/ Nasdaq 100 Index}
+   * - {@link https://dc-js.github.io/dc.js/crime/index.html Canadian City Crime Stats}
    * @mixes StackMixin
    */
   class BarChart extends StackMixin {
@@ -6387,8 +6405,8 @@
    * - color
    *
    * Examples:
-   * - {@link http://dc-js.github.com/dc.js/ Nasdaq 100 Index}
-   * - {@link http://dc-js.github.com/dc.js/vc/index.html US Venture Capital Landscape 2011}
+   * - {@link https://dc-js.github.io/dc.js/ Nasdaq 100 Index}
+   * - {@link https://dc-js.github.io/dc.js/vc/index.html US Venture Capital Landscape 2011}
    * @mixes BubbleMixin
    * @mixes CoordinateGridMixin
    */
@@ -6527,7 +6545,7 @@
    * and coloring.
    *
    * Examples:
-   * - {@link http://dc-js.github.com/dc.js/crime/index.html Canadian City Crime Stats}
+   * - {@link https://dc-js.github.io/dc.js/crime/index.html Canadian City Crime Stats}
    * @mixes BubbleMixin
    * @mixes BaseMixin
    */
@@ -7592,7 +7610,7 @@
    * {@link NumberDisplay} widget instead.
    *
    * Examples:
-   * - {@link http://dc-js.github.com/dc.js/ Nasdaq 100 Index}
+   * - {@link https://dc-js.github.io/dc.js/ Nasdaq 100 Index}
    * @mixes BaseMixin
    */
   class DataCount extends BaseMixin {
@@ -8016,7 +8034,7 @@
    * keying function for {@link https://github.com/d3/d3-collection/blob/master/README.md#nest nesting} the data
    * together in sections.  This was confusing so it has been renamed to `section`, although `group` still works.
    * Examples:
-   * - {@link http://dc-js.github.com/dc.js/ Nasdaq 100 Index}
+   * - {@link https://dc-js.github.io/dc.js/ Nasdaq 100 Index}
    * - {@link http://dc-js.github.io/dc.js/examples/table-on-aggregated-data.html dataTable on a crossfilter group}
    * ({@link https://github.com/dc-js/dc.js/blob/master/web-src/examples/table-on-aggregated-data.html source})
    *
@@ -8436,7 +8454,7 @@
    * {@link http://bl.ocks.org/4060606 the great d3 choropleth example}.
    *
    * Examples:
-   * - {@link http://dc-js.github.com/dc.js/vc/index.html US Venture Capital Landscape 2011}
+   * - {@link https://dc-js.github.io/dc.js/vc/index.html US Venture Capital Landscape 2011}
    * @mixes ColorMixin
    * @mixes BaseMixin
    */
@@ -9350,8 +9368,8 @@
    * labels.
    *
    * Examples:
-   * - {@link http://dc-js.github.com/dc.js/ Nasdaq 100 Index}
-   * - {@link http://dc-js.github.com/dc.js/crime/index.html Canadian City Crime Stats}
+   * - {@link https://dc-js.github.io/dc.js/ Nasdaq 100 Index}
+   * - {@link https://dc-js.github.io/dc.js/crime/index.html Canadian City Crime Stats}
    * @example
    * chart.legend(new Legend().x(400).y(10).itemHeight(13).gap(5))
    * @returns {Legend}
@@ -9710,8 +9728,8 @@
    * Concrete line/area chart implementation.
    *
    * Examples:
-   * - {@link http://dc-js.github.com/dc.js/ Nasdaq 100 Index}
-   * - {@link http://dc-js.github.com/dc.js/crime/index.html Canadian City Crime Stats}
+   * - {@link https://dc-js.github.io/dc.js/ Nasdaq 100 Index}
+   * - {@link https://dc-js.github.io/dc.js/crime/index.html Canadian City Crime Stats}
    * @mixes StackMixin
    * @mixes CoordinateGridMixin
    */
@@ -10485,7 +10503,7 @@
    * which defaults to sorting by key.
    *
    * Examples:
-   * - {@link http://dc-js.github.com/dc.js/ Nasdaq 100 Index}
+   * - {@link https://dc-js.github.io/dc.js/ Nasdaq 100 Index}
    * @mixes CapMixin
    * @mixes ColorMixin
    * @mixes BaseMixin
@@ -11052,7 +11070,7 @@
    * Concrete row chart implementation.
    *
    * Examples:
-   * - {@link http://dc-js.github.com/dc.js/ Nasdaq 100 Index}
+   * - {@link https://dc-js.github.io/dc.js/ Nasdaq 100 Index}
    * @mixes CapMixin
    * @mixes MarginMixin
    * @mixes ColorMixin

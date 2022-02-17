@@ -1490,13 +1490,7 @@ If you are calling it manually - typically you will leave it to <code>false</cod
     
         <h5>Example</h5>
         
-    <pre class="sunlight-highlight-javascript">chart.on(&#x27;renderlet&#x27;, function(chart) {
-    // smooth the rendering through event throttling
-    events.trigger(function(){
-         // focus some other chart to the range selected by user on this chart
-         someOtherChart.focus(chart.filter());
-    });
-})</pre>
+    <pre class="sunlight-highlight-javascript">chart.on(&#x27;renderlet&#x27;, function(chart) {    // smooth the rendering through event throttling    events.trigger(function(){         // focus some other chart to the range selected by user on this chart         someOtherChart.focus(chart.filter());    });})</pre>
 
 
     
@@ -2170,7 +2164,7 @@ chart hence zoom in when range brush updates.</p>
 <p>Usually the range and focus charts will share a dimension. The range chart will set the zoom
 boundaries for the focus chart, so its dimension values must be compatible with the domain of
 the focus chart.</p>
-<p>See the <a href="http://dc-js.github.com/dc.js/">Nasdaq 100 Index</a> example for this effect in action.</p>
+<p>See the <a href="https://dc-js.github.io/dc.js/">Nasdaq 100 Index</a> example for this effect in action.</p>
     </div>
     
 
@@ -2974,9 +2968,7 @@ no effect on elastic scales.)</p>
     
         <h5>Example</h5>
         
-    <pre class="sunlight-highlight-javascript">// set x unit round to by month, this will make sure range selection brush will
-// select whole months
-chart.round(d3.timeMonth.round);</pre>
+    <pre class="sunlight-highlight-javascript">// set x unit round to by month, this will make sure range selection brush will// select whole monthschart.round(d3.timeMonth.round);</pre>
 
 
     
@@ -3531,10 +3523,7 @@ chart.</p>
     
         <h5>Example</h5>
         
-    <pre class="sunlight-highlight-javascript">// set x to a linear scale
-chart.x(d3.scaleLinear().domain([-2500, 2500]))
-// set x to a time scale to generate histogram
-chart.x(d3.scaleTime().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))</pre>
+    <pre class="sunlight-highlight-javascript">// set x to a linear scalechart.x(d3.scaleLinear().domain([-2500, 2500]))// set x to a time scale to generate histogramchart.x(d3.scaleTime().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))</pre>
 
 
     
@@ -3735,10 +3724,7 @@ it returns the axis, not the chart,
     
         <h5>Example</h5>
         
-    <pre class="sunlight-highlight-javascript">// customize x axis tick format
-chart.xAxis().tickFormat(function(v) {return v + &#x27;%&#x27;;});
-// customize x axis tick values
-chart.xAxis().tickValues([0, 100, 200, 300]);</pre>
+    <pre class="sunlight-highlight-javascript">// customize x axis tick formatchart.xAxis().tickFormat(function(v) {return v + &#x27;%&#x27;;});// customize x axis tick valueschart.xAxis().tickValues([0, 100, 200, 300]);</pre>
 
 
     
@@ -4859,23 +4845,7 @@ magic value which caused charts to behave differently, and now it is completely 
     
         <h5>Example</h5>
         
-    <pre class="sunlight-highlight-javascript">// set x units to count days
-chart.xUnits(d3.timeDays);
-// set x units to count months
-chart.xUnits(d3.timeMonths);
-
-// A custom xUnits function can be used as long as it follows the following interface:
-// units in integer
-function(start, end) {
-     // simply calculates how many integers in the domain
-     return Math.abs(end - start);
-}
-
-// fixed units
-function(start, end) {
-     // be aware using fixed units will disable the focus/zoom ability on the chart
-     return 1000;
-}</pre>
+    <pre class="sunlight-highlight-javascript">// set x units to count dayschart.xUnits(d3.timeDays);// set x units to count monthschart.xUnits(d3.timeMonths);// A custom xUnits function can be used as long as it follows the following interface:// units in integerfunction(start, end) {     // simply calculates how many integers in the domain     return Math.abs(end - start);}// fixed unitsfunction(start, end) {     // be aware using fixed units will disable the focus/zoom ability on the chart     return 1000;}</pre>
 
 
     
@@ -5258,10 +5228,7 @@ or <a href="https://github.com/d3/d3-axis/blob/master/README.md#axisRight">d3.ax
     
         <h5>Example</h5>
         
-    <pre class="sunlight-highlight-javascript">// customize y axis tick format
-chart.yAxis().tickFormat(function(v) {return v + &#x27;%&#x27;;});
-// customize y axis tick values
-chart.yAxis().tickValues([0, 100, 200, 300]);</pre>
+    <pre class="sunlight-highlight-javascript">// customize y axis tick formatchart.yAxis().tickFormat(function(v) {return v + &#x27;%&#x27;;});// customize y axis tick valueschart.yAxis().tickValues([0, 100, 200, 300]);</pre>
 
 
     
@@ -6308,7 +6275,7 @@ and a percentage string will be treated the same as an integer.</p>
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a>
 	
-		on Thu Apr 8th 2021
+		on Thu Feb 17th 2022
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

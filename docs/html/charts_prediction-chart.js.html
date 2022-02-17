@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>dc.js Source: charts/line-chart.js</title>
+	<title>dc.js Source: charts/prediction-chart.js</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -40,7 +40,7 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="BarChart.html">BarChart</a></li><li><a href="BoxPlot.html">BoxPlot</a></li><li><a href="BubbleChart.html">BubbleChart</a></li><li><a href="BubbleOverlay.html">BubbleOverlay</a></li><li><a href="CboxMenu.html">CboxMenu</a></li><li><a href="ChartRegistry.html">ChartRegistry</a></li><li><a href="CompositeChart.html">CompositeChart</a></li><li><a href="Config.html">Config</a></li><li><a href="DataCount.html">DataCount</a></li><li><a href="DataGrid.html">DataGrid</a></li><li><a href="DataTable.html">DataTable</a></li><li><a href="filters.HierarchyFilter.html">filters.HierarchyFilter</a></li><li><a href="filters.RangedFilter.html">filters.RangedFilter</a></li><li><a href="filters.RangedTwoDimensionalFilter.html">filters.RangedTwoDimensionalFilter</a></li><li><a href="filters.TwoDimensionalFilter.html">filters.TwoDimensionalFilter</a></li><li><a href="GeoChoroplethChart.html">GeoChoroplethChart</a></li><li><a href="HeatMap.html">HeatMap</a></li><li><a href="HtmlLegend.html">HtmlLegend</a></li><li><a href="Legend.html">Legend</a></li><li><a href="LineChart.html">LineChart</a></li><li><a href="Logger.html">Logger</a></li><li><a href="NumberDisplay.html">NumberDisplay</a></li><li><a href="PieChart.html">PieChart</a></li><li><a href="RowChart.html">RowChart</a></li><li><a href="ScatterPlot.html">ScatterPlot</a></li><li><a href="SelectMenu.html">SelectMenu</a></li><li><a href="SeriesChart.html">SeriesChart</a></li><li><a href="SunburstChart.html">SunburstChart</a></li><li><a href="TextFilterWidget.html">TextFilterWidget</a></li>
+					<li><a href="BarChart.html">BarChart</a></li><li><a href="BoxPlot.html">BoxPlot</a></li><li><a href="BubbleChart.html">BubbleChart</a></li><li><a href="BubbleOverlay.html">BubbleOverlay</a></li><li><a href="CboxMenu.html">CboxMenu</a></li><li><a href="ChartRegistry.html">ChartRegistry</a></li><li><a href="CompositeChart.html">CompositeChart</a></li><li><a href="Config.html">Config</a></li><li><a href="DataCount.html">DataCount</a></li><li><a href="DataGrid.html">DataGrid</a></li><li><a href="DataTable.html">DataTable</a></li><li><a href="filters.HierarchyFilter.html">filters.HierarchyFilter</a></li><li><a href="filters.RangedFilter.html">filters.RangedFilter</a></li><li><a href="filters.RangedTwoDimensionalFilter.html">filters.RangedTwoDimensionalFilter</a></li><li><a href="filters.TwoDimensionalFilter.html">filters.TwoDimensionalFilter</a></li><li><a href="GeoChoroplethChart.html">GeoChoroplethChart</a></li><li><a href="HeatMap.html">HeatMap</a></li><li><a href="HtmlLegend.html">HtmlLegend</a></li><li><a href="Legend.html">Legend</a></li><li><a href="LineChart.html">LineChart</a></li><li><a href="Logger.html">Logger</a></li><li><a href="NumberDisplay.html">NumberDisplay</a></li><li><a href="PieChart.html">PieChart</a></li><li><a href="PredictionChart.html">PredictionChart</a></li><li><a href="RowChart.html">RowChart</a></li><li><a href="ScatterPlot.html">ScatterPlot</a></li><li><a href="SelectMenu.html">SelectMenu</a></li><li><a href="SeriesChart.html">SeriesChart</a></li><li><a href="SunburstChart.html">SunburstChart</a></li><li><a href="TextFilterWidget.html">TextFilterWidget</a></li>
 				</ul>
 			</li>
 			
@@ -86,7 +86,7 @@
 		<div id="main">
 			
 
-		<h1 class="page-title">Source: charts/line-chart.js</h1>
+		<h1 class="page-title">Source: charts/prediction-chart.js</h1>
     
 <section>
     <article>
@@ -132,16 +132,16 @@ const LABEL_PADDING = 3;
  * @mixes StackMixin
  * @mixes CoordinateGridMixin
  */
-export class LineChart extends StackMixin {
+export class PredictionChart extends StackMixin {
     /**
      * Create a Line Chart.
      * @example
      * // create a line chart under #chart-container1 element using the default global chart group
-     * var chart1 = new LineChart('#chart-container1');
+     * var chart1 = new PredictionChart('#chart-container1');
      * // create a line chart under #chart-container2 element using chart group A
-     * var chart2 = new LineChart('#chart-container2', 'chartGroupA');
+     * var chart2 = new PredictionChart('#chart-container2', 'chartGroupA');
      * // create a sub-chart under a composite parent chart
-     * var chart3 = new LineChart(compositeChart);
+     * var chart3 = new PredictionChart(compositeChart);
      * @param {String|node|d3.selection|CompositeChart} parent - Any valid
      * {@link https://github.com/d3/d3-selection/blob/master/README.md#select d3 single selector}
      * specifying a dom block element such as a div; or a dom element or d3 selection.  If the line
@@ -182,6 +182,21 @@ export class LineChart extends StackMixin {
             layersList = chartBody.append('g').attr('class', 'stack-list');
         }
 
+
+
+            // drawTitle(title, innerWidth);
+            //
+            // drawAxis(xScale, innerHeight);
+            //
+            // drawDots(_data, xScale, yScale, colorScale);
+            //
+            // drawPredictedLine(bins);
+            //
+            // drawIdealLine(_data);
+            //
+            // drawVarianceBand(bins);
+
+
         let layers = layersList.selectAll('g.stack').data(this.data());
 
         const layersEnter = layers
@@ -193,7 +208,16 @@ export class LineChart extends StackMixin {
 
         this._drawLine(layersEnter, layers);
 
+        this._drawLineIdeal(layersEnter, layers);
+
         this._drawArea(layersEnter, layers);
+
+            // drawPredictedLine(bins);
+            //
+            // drawIdealLine(_data);
+            //
+            // drawVarianceBand(bins);
+
 
         this._drawDots(chartBody, layers);
 
@@ -207,7 +231,7 @@ export class LineChart extends StackMixin {
      * functions, splines, and cubic interpolation. Typically you would use one of the interpolator functions
      * provided by {@link https://github.com/d3/d3-shape/blob/master/README.md#curves d3 curves}.
      *
-     * Replaces the use of {@link LineChart#interpolate} and {@link LineChart#tension}
+     * Replaces the use of {@link PredictionChart#interpolate} and {@link PredictionChart#tension}
      * in dc.js &lt; 3.0
      *
      * This is passed to
@@ -227,7 +251,7 @@ export class LineChart extends StackMixin {
      * @see {@link https://github.com/d3/d3-shape/blob/master/README.md#line_curve line.curve}
      * @see {@link https://github.com/d3/d3-shape/blob/master/README.md#area_curve area.curve}
      * @param  {d3.curve} [curve=d3.curveLinear]
-     * @returns {d3.curve|LineChart}
+     * @returns {d3.curve|PredictionChart}
      */
     curve (curve) {
         if (!arguments.length) {
@@ -245,16 +269,16 @@ export class LineChart extends StackMixin {
      * 'basis-open', 'basis-closed', 'bundle', 'cardinal', 'cardinal-open', 'cardinal-closed', and
      * 'monotone'.
      *
-     * This function exists for backward compatibility. Use {@link LineChart#curve}
+     * This function exists for backward compatibility. Use {@link PredictionChart#curve}
      * which is generic and provides more options.
      * Value set through `.curve` takes precedence over `.interpolate` and `.tension`.
-     * @deprecated since version 3.0 use {@link LineChart#curve} instead
-     * @see {@link LineChart#curve}
+     * @deprecated since version 3.0 use {@link PredictionChart#curve} instead
+     * @see {@link PredictionChart#curve}
      * @param  {d3.curve} [interpolate=d3.curveLinear]
-     * @returns {d3.curve|LineChart}
+     * @returns {d3.curve|PredictionChart}
      */
     interpolate (interpolate) {
-        logger.warnOnce('dc.lineChart.interpolate has been deprecated since version 3.0 use dc.lineChart.curve instead');
+        logger.warnOnce('dc.PredictionChart.interpolate has been deprecated since version 3.0 use dc.PredictionChart.curve instead');
         if (!arguments.length) {
             return this._interpolate;
         }
@@ -269,16 +293,16 @@ export class LineChart extends StackMixin {
      * if it provides a `.tension` function. Example:
      * {@link https://github.com/d3/d3-shape/blob/master/README.md#curveCardinal_tension curveCardinal.tension}.
      *
-     * This function exists for backward compatibility. Use {@link LineChart#curve}
+     * This function exists for backward compatibility. Use {@link PredictionChart#curve}
      * which is generic and provides more options.
      * Value set through `.curve` takes precedence over `.interpolate` and `.tension`.
-     * @deprecated since version 3.0 use {@link LineChart#curve} instead
-     * @see {@link LineChart#curve}
+     * @deprecated since version 3.0 use {@link PredictionChart#curve} instead
+     * @see {@link PredictionChart#curve}
      * @param  {Number} [tension=0]
-     * @returns {Number|LineChart}
+     * @returns {Number|PredictionChart}
      */
     tension (tension) {
-        logger.warnOnce('dc.lineChart.tension has been deprecated since version 3.0 use dc.lineChart.curve instead');
+        logger.warnOnce('dc.PredictionChart.tension has been deprecated since version 3.0 use dc.PredictionChart.curve instead');
         if (!arguments.length) {
             return this._tension;
         }
@@ -298,7 +322,7 @@ export class LineChart extends StackMixin {
      * for more details and an example.
      * @see {@link https://github.com/d3/d3-shape/blob/master/README.md#line_defined line.defined}
      * @param  {Function} [defined]
-     * @returns {Function|LineChart}
+     * @returns {Function|PredictionChart}
      */
     defined (defined) {
         if (!arguments.length) {
@@ -316,7 +340,7 @@ export class LineChart extends StackMixin {
      * // create a Dash Dot Dot Dot
      * chart.dashStyle([3,1,1,1]);
      * @param  {Array&lt;Number>} [dashStyle=[]]
-     * @returns {Array&lt;Number>|LineChart}
+     * @returns {Array&lt;Number>|PredictionChart}
      */
     dashStyle (dashStyle) {
         if (!arguments.length) {
@@ -330,7 +354,7 @@ export class LineChart extends StackMixin {
      * Get or set render area flag. If the flag is set to true then the chart will render the area
      * beneath each line and the line chart effectively becomes an area chart.
      * @param  {Boolean} [renderArea=false]
-     * @returns {Boolean|LineChart}
+     * @returns {Boolean|PredictionChart}
      */
     renderArea (renderArea) {
         if (!arguments.length) {
@@ -393,11 +417,36 @@ export class LineChart extends StackMixin {
         return curve;
     }
 
+    _drawLineIdeal (layersEnter, layers) {
+        const _line = line()
+            .x(d => this.x()(d.x))
+            .y(d => this.y()(d.x))
+            .curve(this._getCurveFactory());
+
+        if (this._defined) {
+            _line.defined(this._defined);
+        }
+
+        const path = layersEnter.append('path')
+            .attr('class', 'ideal')
+            .attr('stroke', 'green'/* (d, i) => this._getColor(d, i)*/);
+
+        if (this._dashStyle) {
+            path.attr('stroke-dasharray', this._dashStyle);
+        }
+
+        transition(layers.select('path.ideal'), this.transitionDuration(), this.transitionDelay())
+        //.ease('linear')
+        //     .attr('stroke', (d, i) => this._getColor(d, i))
+            .attr('d', d => this._safeD(_line(d.values)));
+    }
+
     _drawLine (layersEnter, layers) {
         const _line = line()
             .x(d => this.x()(d.x))
             .y(d => this.y()(d.y + d.y0))
             .curve(this._getCurveFactory());
+
         if (this._defined) {
             _line.defined(this._defined);
         }
@@ -405,6 +454,7 @@ export class LineChart extends StackMixin {
         const path = layersEnter.append('path')
             .attr('class', 'line')
             .attr('stroke', (d, i) => this._getColor(d, i));
+
         if (this._dashStyle) {
             path.attr('stroke-dasharray', this._dashStyle);
         }
@@ -603,7 +653,7 @@ export class LineChart extends StackMixin {
      * dashed lines back to each respective axis.  This is ignored if the chart
      * {@link CoordinateGridMixin#brushOn brush} is on
      * @param  {Boolean} [xyTipsOn=false]
-     * @returns {Boolean|LineChart}
+     * @returns {Boolean|PredictionChart}
      */
     xyTipsOn (xyTipsOn) {
         if (!arguments.length) {
@@ -616,7 +666,7 @@ export class LineChart extends StackMixin {
     /**
      * Get or set the radius (in px) for dots displayed on the data points.
      * @param  {Number} [dotRadius=5]
-     * @returns {Number|LineChart}
+     * @returns {Number|PredictionChart}
      */
     dotRadius (dotRadius) {
         if (!arguments.length) {
@@ -634,7 +684,7 @@ export class LineChart extends StackMixin {
      * @example
      * chart.renderDataPoints({radius: 2, fillOpacity: 0.8, strokeOpacity: 0.0})
      * @param  {{fillOpacity: Number, strokeOpacity: Number, radius: Number}} [options={fillOpacity: 0.8, strokeOpacity: 0.0, radius: 2}]
-     * @returns {{fillOpacity: Number, strokeOpacity: Number, radius: Number}|LineChart}
+     * @returns {{fillOpacity: Number, strokeOpacity: Number, radius: Number}|PredictionChart}
      */
     renderDataPoints (options) {
         if (!arguments.length) {
@@ -691,7 +741,7 @@ export class LineChart extends StackMixin {
     }
 }
 
-export const lineChart = (parent, chartGroup) => new LineChart(parent, chartGroup);
+export const predictionChart = (parent, chartGroup) => new PredictionChart(parent, chartGroup);
 </pre>
     </article>
 </section>
@@ -735,9 +785,9 @@ export const lineChart = (parent, chartGroup) => new LineChart(parent, chartGrou
 	</span>
 
 <span class="jsdoc-message">
-	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a>
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a>
 	
-		on Thu Feb 17th 2022
+		on Sat Feb 12th 2022
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>dc.js Source: charts/bar-chart.js</title>
+	<title>dc.js Source: charts/histogram-chart.js</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -40,7 +40,7 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="BarChart.html">BarChart</a></li><li><a href="BoxPlot.html">BoxPlot</a></li><li><a href="BubbleChart.html">BubbleChart</a></li><li><a href="BubbleOverlay.html">BubbleOverlay</a></li><li><a href="CboxMenu.html">CboxMenu</a></li><li><a href="ChartRegistry.html">ChartRegistry</a></li><li><a href="CompositeChart.html">CompositeChart</a></li><li><a href="Config.html">Config</a></li><li><a href="DataCount.html">DataCount</a></li><li><a href="DataGrid.html">DataGrid</a></li><li><a href="DataTable.html">DataTable</a></li><li><a href="filters.HierarchyFilter.html">filters.HierarchyFilter</a></li><li><a href="filters.RangedFilter.html">filters.RangedFilter</a></li><li><a href="filters.RangedTwoDimensionalFilter.html">filters.RangedTwoDimensionalFilter</a></li><li><a href="filters.TwoDimensionalFilter.html">filters.TwoDimensionalFilter</a></li><li><a href="GeoChoroplethChart.html">GeoChoroplethChart</a></li><li><a href="HeatMap.html">HeatMap</a></li><li><a href="HtmlLegend.html">HtmlLegend</a></li><li><a href="Legend.html">Legend</a></li><li><a href="LineChart.html">LineChart</a></li><li><a href="Logger.html">Logger</a></li><li><a href="NumberDisplay.html">NumberDisplay</a></li><li><a href="PieChart.html">PieChart</a></li><li><a href="RowChart.html">RowChart</a></li><li><a href="ScatterPlot.html">ScatterPlot</a></li><li><a href="SelectMenu.html">SelectMenu</a></li><li><a href="SeriesChart.html">SeriesChart</a></li><li><a href="SunburstChart.html">SunburstChart</a></li><li><a href="TextFilterWidget.html">TextFilterWidget</a></li>
+					<li><a href="BarChart.html">BarChart</a></li><li><a href="BoxPlot.html">BoxPlot</a></li><li><a href="BubbleChart.html">BubbleChart</a></li><li><a href="BubbleOverlay.html">BubbleOverlay</a></li><li><a href="CboxMenu.html">CboxMenu</a></li><li><a href="ChartRegistry.html">ChartRegistry</a></li><li><a href="CompositeChart.html">CompositeChart</a></li><li><a href="Config.html">Config</a></li><li><a href="DataCount.html">DataCount</a></li><li><a href="DataGrid.html">DataGrid</a></li><li><a href="DataTable.html">DataTable</a></li><li><a href="filters.HierarchyFilter.html">filters.HierarchyFilter</a></li><li><a href="filters.RangedFilter.html">filters.RangedFilter</a></li><li><a href="filters.RangedTwoDimensionalFilter.html">filters.RangedTwoDimensionalFilter</a></li><li><a href="filters.TwoDimensionalFilter.html">filters.TwoDimensionalFilter</a></li><li><a href="GeoChoroplethChart.html">GeoChoroplethChart</a></li><li><a href="HeatMap.html">HeatMap</a></li><li><a href="HistogramChart.html">HistogramChart</a></li><li><a href="HtmlLegend.html">HtmlLegend</a></li><li><a href="Legend.html">Legend</a></li><li><a href="LineChart.html">LineChart</a></li><li><a href="Logger.html">Logger</a></li><li><a href="NumberDisplay.html">NumberDisplay</a></li><li><a href="PieChart.html">PieChart</a></li><li><a href="RowChart.html">RowChart</a></li><li><a href="ScatterPlot.html">ScatterPlot</a></li><li><a href="SelectMenu.html">SelectMenu</a></li><li><a href="SeriesChart.html">SeriesChart</a></li><li><a href="SunburstChart.html">SunburstChart</a></li><li><a href="TextFilterWidget.html">TextFilterWidget</a></li>
 				</ul>
 			</li>
 			
@@ -86,7 +86,7 @@
 		<div id="main">
 			
 
-		<h1 class="page-title">Source: charts/bar-chart.js</h1>
+		<h1 class="page-title">Source: charts/histogram-chart.js</h1>
     
 <section>
     <article>
@@ -112,19 +112,19 @@ const LABEL_PADDING = 3;
  * - {@link https://dc-js.github.io/dc.js/crime/index.html Canadian City Crime Stats}
  * @mixes StackMixin
  */
-export class BarChart extends StackMixin {
+export class HistogramChart extends StackMixin {
     /**
-     * Create a Bar Chart
+     * Create a Histogram Chart
      * @example
-     * // create a bar chart under #chart-container1 element using the default global chart group
+     * // create a Histogram chart under #chart-container1 element using the default global chart group
      * var chart1 = new BarChart('#chart-container1');
-     * // create a bar chart under #chart-container2 element using chart group A
+     * // create a Histogram chart under #chart-container2 element using chart group A
      * var chart2 = new BarChart('#chart-container2', 'chartGroupA');
      * // create a sub-chart under a composite parent chart
      * var chart3 = new BarChart(compositeChart);
      * @param {String|node|d3.selection|CompositeChart} parent - Any valid
      * {@link https://github.com/d3/d3-selection/blob/master/README.md#select d3 single selector}
-     * specifying a dom block element such as a div; or a dom element or d3 selection.  If the bar
+     * specifying a dom block element such as a div; or a dom element or d3 selection.  If the Histogram
      * chart is a sub-chart in a {@link CompositeChart Composite Chart} then pass in the parent
      * composite chart instance instead.
      * @param {String} [chartGroup] - The name of the chart group this chart instance should be placed in.
@@ -145,10 +145,10 @@ export class BarChart extends StackMixin {
     }
 
     /**
-     * Get or set the outer padding on an ordinal bar chart. This setting has no effect on non-ordinal charts.
+     * Get or set the outer padding on an ordinal Histogram chart. This setting has no effect on non-ordinal charts.
      * Will pad the width by `padding * barWidth` on each side of the chart.
      * @param {Number} [padding=0.5]
-     * @returns {Number|BarChart}
+     * @returns {Number|HistogramChart}
      */
     outerPadding (padding) {
         if (!arguments.length) {
@@ -166,7 +166,7 @@ export class BarChart extends StackMixin {
     render () {
         if (this.round() &amp;&amp; this._centerBar &amp;&amp; !this._alwaysUseRounding) {
             logger.warn('By default, brush rounding is disabled if bars are centered. ' +
-                'See dc.js bar chart API documentation for details.');
+                'See dc.js Histogram chart API documentation for details.');
         }
 
         return super.render();
@@ -200,7 +200,9 @@ export class BarChart extends StackMixin {
     }
 
     _barHeight (d) {
-        return utils.safeNumber(Math.abs(this.y()(d.y + d.y0) - this.y()(d.y0)));
+        return utils.safeNumber(Math.abs(this.y()(
+            d.length ?? 0
+            /*d.y + d.y0*/) - this.y()(0/*d.y0*/)));
     }
 
     _labelXPos (d) {
@@ -253,7 +255,7 @@ export class BarChart extends StackMixin {
     }
 
     _barXPos (d) {
-        let x = this.x()(d.x);
+        let x = this.x()(d.x0);
         if (this._centerBar) {
             x -= this._barWidth / 2;
         }
@@ -264,14 +266,19 @@ export class BarChart extends StackMixin {
     }
 
     _renderBars (layer, layerIndex, data) {
+
+        const bins = d3.bin().value(pluck('y'))(data.values)
+
+        // console.log(bins)
+
         const bars = layer.selectAll('rect.bar')
-            .data(data.values, pluck('x'));
+            .data(bins/*data.values, pluck('x')*/);
 
         const enter = bars.enter()
             .append('rect')
             .attr('class', 'bar')
             .classed('dc-tabbable', this._keyboardAccessible)
-            .attr('fill', pluck('data', this.getColor))
+            // .attr('fill', pluck('data', this.getColor))
             .attr('x', d => this._barXPos(d))
             .attr('y', this.yAxisHeight())
             .attr('height', 0);
@@ -279,7 +286,7 @@ export class BarChart extends StackMixin {
         const barsEnterUpdate = enter.merge(bars);
 
         if (this.renderTitle()) {
-            enter.append('title').text(pluck('data', this.title(data.name)));
+            // enter.append('title').text(pluck('data', this.title(data.name)));
         }
 
         if (this.isOrdinal()) {
@@ -303,11 +310,11 @@ export class BarChart extends StackMixin {
             })
             .attr('width', this._barWidth)
             .attr('height', d => this._barHeight(d))
-            .attr('fill', pluck('data', this.getColor))
-            .select('title').text(pluck('data', this.title(data.name)));
+            // .attr('fill', pluck('data', this.getColor))
+            // .select('title').text(pluck('data', this.title(data.name)));
 
         transition(bars.exit(), this.transitionDuration(), this.transitionDelay())
-            .attr('x', d => this.x()(d.x))
+            .attr('x', d => this.x()(d.x0))
             .attr('width', this._barWidth * 0.9)
             .remove();
     }
@@ -357,7 +364,7 @@ export class BarChart extends StackMixin {
     /**
      * Whether the bar chart will render each bar centered around the data position on the x-axis.
      * @param {Boolean} [centerBar=false]
-     * @returns {Boolean|BarChart}
+     * @returns {Boolean|HistogramChart}
      */
     centerBar (centerBar) {
         if (!arguments.length) {
@@ -373,11 +380,11 @@ export class BarChart extends StackMixin {
 
     /**
      * Get or set the spacing between bars as a fraction of bar size. Valid values are between 0-1.
-     * Setting this value will also remove any previously set {@link BarChart#gap gap}. See the
+     * Setting this value will also remove any previously set {@link HistogramChart#gap gap}. See the
      * {@link https://github.com/d3/d3-scale/blob/master/README.md#scaleBand d3 docs}
      * for a visual description of how the padding is applied.
      * @param {Number} [barPadding=0]
-     * @returns {Number|BarChart}
+     * @returns {Number|HistogramChart}
      */
     barPadding (barPadding) {
         if (!arguments.length) {
@@ -397,7 +404,7 @@ export class BarChart extends StackMixin {
      * gap.  By default the bar chart implementation will calculate and set the gap automatically
      * based on the number of data points and the length of the x axis.
      * @param {Number} [gap=2]
-     * @returns {Number|BarChart}
+     * @returns {Number|HistogramChart}
      */
     gap (gap) {
         if (!arguments.length) {
@@ -418,14 +425,14 @@ export class BarChart extends StackMixin {
     /**
      * Set or get whether rounding is enabled when bars are centered. If false, using
      * rounding with centered bars will result in a warning and rounding will be ignored.  This flag
-     * has no effect if bars are not {@link BarChart#centerBar centered}.
+     * has no effect if bars are not {@link HistogramChart#centerBar centered}.
      * When using standard d3.js rounding methods, the brush often doesn't align correctly with
      * centered bars since the bars are offset.  The rounding function must add an offset to
      * compensate, such as in the following example.
      * @example
      * chart.round(function(n) { return Math.floor(n) + 0.5; });
      * @param {Boolean} [alwaysUseRounding=false]
-     * @returns {Boolean|BarChart}
+     * @returns {Boolean|HistogramChart}
      */
     alwaysUseRounding (alwaysUseRounding) {
         if (!arguments.length) {
@@ -465,7 +472,7 @@ export class BarChart extends StackMixin {
     }
 }
 
-export const barChart = (parent, chartGroup) => new BarChart(parent, chartGroup);
+export const barChart = (parent, chartGroup) => new HistogramChart(parent, chartGroup);
 </pre>
     </article>
 </section>
@@ -509,9 +516,9 @@ export const barChart = (parent, chartGroup) => new BarChart(parent, chartGroup)
 	</span>
 
 <span class="jsdoc-message">
-	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a>
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a>
 	
-		on Thu Feb 17th 2022
+		on Fri Feb 11th 2022
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>
