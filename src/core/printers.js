@@ -50,3 +50,28 @@ printers.filter = function (filter) {
 
     return s;
 };
+
+/**
+ * Converts a filter into a actionable chip.
+ * @method filterItem
+ * @memberof printers
+ * @param {filters|any|Array<any>} filterItem
+ * @returns {String}
+ */
+printers.filterItem = function (filter) {
+    let s = '';
+
+    if (typeof filter !== 'undefined' && filter !== null) {
+        if (filter instanceof Array) {
+            if (filter.length >= 2) {
+                s = `<span class="label">[${filter.map(e => utils.printSingleValue(e)).join(' -> ')}]</span><span class="close">&times;</span>`;
+            } else if (filter.length >= 1) {
+                s = `<span class="label">${utils.printSingleValue(filter[0])}</span><span class="close">&times;</span>`;
+            }
+        } else {
+            s = `<span class="label">${utils.printSingleValue(filter)}</span><span class="close">&times;</span>`;
+        }
+    }
+
+    return s;
+};

@@ -1,8 +1,8 @@
 /*!
  *  dc <%= pkg.version %>
  *  http://dc-js.github.io/dc.js/
- *  Copyright 2012-<%= moment().format('YYYY') %> Nick Zhu & the dc.js Developers
- *  https://github.com/dc-js/dc.js/blob/master/AUTHORS
+ *  Copyright 2022-<%= moment().format('YYYY') %> Evolve & the dc.js Developers
+ *  https://github.com/datascienceisrael/dc.js/blob/master/AUTHORS
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.

@@ -1,6 +1,6 @@
 {
-  "name": "dc",
-  "version": "4.2.7",
+  "name": "@nshilon/dc.js",
+  "version": "1.0.3",
   "license": "Apache-2.0",
   "copyright": "2020",
   "description": "A multi-dimensional charting library built to work natively with crossfilter and rendered using d3.js ",
@@ -12,20 +12,21 @@
     "chart",
     "dimensional",
     "crossfilter",
+    "reductio",
     "d3"
   ],
-  "homepage": "http://dc-js.github.io/dc.js/",
-  "bugs": "https://github.com/dc-js/dc.js/issues",
+  "homepage": "http://datascienceisrael.github.io/dc.js/",
+  "bugs": "https://github.com/datascienceisrael/dc.js/issues",
   "author": {
-    "name": "Nick Zhu",
-    "url": "http://nzhu.blogspot.ca/"
+    "name": "Nir Evolve",
+    "url": "http://dsg.ai"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dc-js/dc.js.git"
+    "url": "https://github.com/datascienceisrael/dc.js.git"
   },
   "dependencies": {
-    "d3": "^6.6.2"
+    "d3": "^7.3.0"
   },
   "devDependencies": {
     "@chiragrupani/karma-chromium-edge-launcher": "^2.1.0",
@@ -68,13 +69,18 @@
     "regression": "^2.0.1",
     "rollup": "^1.32.1",
     "rollup-plugin-license": "^2.3.0",
+    "rollup-plugin-scss": "^3.0.0",
     "rollup-plugin-terser": "^7.0.2",
     "time-grunt": "~1.4"
   },
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test",
+    "build": "grunt build"
   },
   "browser": "dist/dc.js",
   "main": "dist/dc.js",
-  "module": "src/index.js"
+  "module": "src/index.js",
+  "files": [
+    "dist"
+  ]
 }

@@ -323,3 +323,36 @@ div.dc-html-legend {
 .dc-html-legend-container{
     height: inherit;
 }
+
+.dc-chart .filter {
+  padding: 3px;
+  background: #CCD3E1;
+  border-radius: 2px;
+  margin: 4px;
+  display: inline-flex;
+  flex-flow: row nowrap;
+  align-items: center;
+
+
+  .label {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
+  .close {
+    margin-left: 4px;
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    text-align: center;
+    line-height: 16px;
+    color: #000000;
+    &:hover {
+      border-radius: 50%;
+      background: whitesmoke;
+    }
+  }
+}

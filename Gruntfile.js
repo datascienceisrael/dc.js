@@ -36,7 +36,7 @@ module.exports = function (grunt) {
             },
             dist: {
                 files: {
-                    '<%= conf.dist %>/style/<%= conf.pkg.name %>.css': 'style/<%= conf.pkg.name %>.scss'
+                    '<%= conf.dist %>/style/dc.css': 'style/dc.scss'
                 }
             }
         },
@@ -47,7 +47,7 @@ module.exports = function (grunt) {
             },
             main: {
                 files: {
-                    '<%= conf.dist %>/style/<%= conf.pkg.name %>.min.css': ['<%= conf.dist %>/style/<%= conf.pkg.name %>.css']
+                    '<%= conf.dist %>/style/dc.min.css': ['<%= conf.dist %>/style/dc.css']
                 }
             }
         },

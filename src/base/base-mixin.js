@@ -117,7 +117,7 @@ export class BaseMixin {
 
         this._transitionDelay = 0;
 
-        this._filterPrinter = printers.filters;
+        this._filterPrinter = printers.filterItem;
 
         this._mandatoryAttributesList = ['dimension', 'group'];
 
@@ -630,7 +630,25 @@ export class BaseMixin {
         if (this._root) {
             const attribute = this.controlsUseVisibility() ? 'visibility' : 'display';
             this.selectAll('.reset').style(attribute, null);
-            this.selectAll('.filter').text(this._filterPrinter(this.filters())).style(attribute, null);
+
+            const filterSelection = this.selectAll('.filter')
+                .data(this.filters(), d=> d);
+
+            filterSelection.exit().remove()
+
+            filterSelection
+                .enter()
+                .append('span')
+                .classed('filter', true)
+                .html(d => this._filterPrinter(d))
+                .select('.close').on('click', (ev, filter) => {
+                    if (this.hasFilter(filter)) {
+                               events.trigger(() => {
+                                   this.filter(filter);
+                                   this.redrawGroup();
+                               });
+                    }
+                });
         }
         return this;
     }
@@ -645,7 +663,7 @@ export class BaseMixin {
             const attribute = this.controlsUseVisibility() ? 'visibility' : 'display';
             const value = this.controlsUseVisibility() ? 'hidden' : 'none';
             this.selectAll('.reset').style(attribute, value);
-            this.selectAll('.filter').style(attribute, value).text(this.filter());
+            this.selectAll('.filter').data(this.filters(), d => d).exit().remove();
         }
         return this;
     }

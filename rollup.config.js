@@ -1,6 +1,7 @@
 import {terser} from 'rollup-plugin-terser';
 import json from '@rollup/plugin-json';
 import license from 'rollup-plugin-license';
+import scss from 'rollup-plugin-scss';
 
 const jsonPlugin = json({include: 'package.json', preferConst: true});
 const licensePlugin = license({
@@ -45,7 +46,11 @@ const umdConf = {
 
 const umdMinConf = Object.assign({}, umdConf, {
     file: 'dist/dc.min.js',
-    plugins: [terser()]
+    plugins: [terser(),
+              scss({
+                  output: 'dist/dc.js.min.css',
+                  outputStyle: 'compressed'
+              }),]
 });
 
 export default [
