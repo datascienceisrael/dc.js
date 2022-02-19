@@ -23,6 +23,7 @@ const VERTICAL_CLASS = 'vertical';
 const Y_AXIS_LABEL_CLASS = 'y-axis-label';
 const X_AXIS_LABEL_CLASS = 'x-axis-label';
 const CUSTOM_BRUSH_HANDLE_CLASS = 'custom-brush-handle';
+const CUSTOM_BRUSH_MARK_CLASS = 'custom-brush-mark';
 const DEFAULT_AXIS_LABEL_PADDING = 12;
 
 /**
@@ -985,16 +986,21 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
     }
 
     createBrushHandlePaths (gBrush) {
-        let brushHandles = gBrush.selectAll(`path.${CUSTOM_BRUSH_HANDLE_CLASS}`).data([{type: 'w'}, {type: 'e'}]);
+        const brushHandles = gBrush.selectAll(`.${CUSTOM_BRUSH_HANDLE_CLASS}`).data([{type: 'w'}, {type: 'e'}]);
 
-        brushHandles = brushHandles
-            .enter()
+        const brushHandlesEnter = brushHandles.enter()
+            .append('g')
+            .attr('class', CUSTOM_BRUSH_HANDLE_CLASS);
+
+        brushHandlesEnter
             .append('path')
-            .attr('class', CUSTOM_BRUSH_HANDLE_CLASS)
-            .merge(brushHandles);
-
-        brushHandles
             .attr('d', d => this.resizeHandlePath(d));
+
+        brushHandlesEnter
+            .append('path')
+            .attr('class', CUSTOM_BRUSH_MARK_CLASS)
+            .attr('d', d => this.resizeHandleMarks(d));
+
     }
 
     extendBrush (brushSelection) {
@@ -1069,7 +1075,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
                         .call(this._brush.move, null);
                 })
 
-                this._gBrush.selectAll(`path.${CUSTOM_BRUSH_HANDLE_CLASS}`)
+                this._gBrush.selectAll(`g.${CUSTOM_BRUSH_HANDLE_CLASS}`)
                     .attr('display', 'none');
             } else {
                 const scaledSelection = [this._x(brushSelection[0]), this._x(brushSelection[1])];
@@ -1082,10 +1088,10 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
                         .call(this._brush.move, scaledSelection);
                 });
 
-                gBrush.selectAll(`path.${CUSTOM_BRUSH_HANDLE_CLASS}`)
+                gBrush.selectAll(`g.${CUSTOM_BRUSH_HANDLE_CLASS}`)
                     .attr('display', null)
-                    .attr('transform', (d, i) => `translate(${this._x(brushSelection[i])}, 0)`)
-                    .attr('d', d => this.resizeHandlePath(d));
+                    .attr('transform', (d, i) => `translate(${this._x(brushSelection[i])-9}, ${this.effectiveHeight() / 2 - 13})`)
+                    /*.attr('d', d => this.resizeHandlePath(d))*/;
             }
         }
         this.fadeDeselectedArea(brushSelection);
@@ -1095,19 +1101,58 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         // do nothing, sub-chart should override this function
     }
 
+    resizeHandleMarks (d) {
+        return `M6.73004 7.33333
+        C6.73004 7.14924 6.58969 7 6.41657 7
+        C6.24345 7 6.1031 7.14924 6.1031 7.33333V18.6667
+        C6.1031 18.8508 6.24345 19 6.41657 19
+        C6.58969 19 6.73003 18.8508 6.73003 18.6667
+        L6.73004 7.33333
+        Z
+        
+        M10.1155 7.33333
+        C10.1155 7.14924 9.97512 7 9.802 7
+        C9.62888 7 9.48853 7.14924 9.48853 7.33333
+        L9.48853 18.6667
+        C9.48853 18.8508 9.62888 19 9.802 19
+        C9.97512 19 10.1155 18.8508 10.1155 18.6667
+        L10.1155 7.33333
+        Z`;
+
+    }
+
     // borrowed from Crossfilter example
     resizeHandlePath (d) {
-        d = d.type;
+
+/*<svg width="17" height="26" viewBox="0 0 17 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M3.09383 5.5 
+C3.09383 2.46243 5.56387 0 8.61082 0 
+C11.6578 0 14.1278 2.46243 14.1278 5.5 
+V20.5 
+C14.1278 23.5376 11.6578 26 8.61082 26 
+C5.56387 26 3.09383 23.5376 3.09383 20.5
+V5.5
+Z" fill="#15C89D"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M6.73004 7.33333C6.73004 7.14924 6.58969 7 6.41657 7C6.24345
+7 6.1031 7.14924 6.1031 7.33333V18.6667C6.1031 18.8508 6.24345 19 6.41657 19C6.58969 19 6.73003 18.8508 6.73003 18.6667L6.73004
+7.33333ZM10.1155 7.33333C10.1155 7.14924 9.97512 7 9.802 7C9.62888 7 9.48853 7.14924 9.48853 7.33333L9.48853 18.6667C9.48853
+18.8508 9.62888 19 9.802 19C9.97512 19 10.1155 18.8508 10.1155 18.6667L10.1155 7.33333Z" fill="#139878"/>
+</svg>*/
+
+        return `M3.09383 5.5
+        C3.09383 2.46243 5.56387 0 8.61082 0
+        C11.6578 0 14.1278 2.46243 14.1278 5.5
+        V20.5
+        C14.1278 23.5376 11.6578 26 8.61082 26
+        C5.56387 26 3.09383 23.5376 3.09383 20.5
+        V5.5
+        Z`;
+
+
+/*        d = d.type;
         const e = +(d === 'e'), x = e ? 1 : -1, y = this.effectiveHeight() / 3;
-        return `M${0.5 * x},${y 
-        }A6,6 0 0 ${e} ${6.5 * x},${y + 6 
-        }V${2 * y - 6 
-        }A6,6 0 0 ${e} ${0.5 * x},${2 * y 
-        }Z` +
-            `M${2.5 * x},${y + 8 
-            }V${2 * y - 8 
-            }M${4.5 * x},${y + 8 
-            }V${2 * y - 8}`;
+        return `M0,${y} A6,6 0 0 ${e} ${6.5 * x},${y + 6} V${2 * y - 6} A6,6 0 0 ${e} ${0.5 * x},${2 * y} Z` +
+            `M${2.5 * x},${y + 8 }V${2 * y - 8}M${4.5 * x},${y + 8}V${2 * y - 8}`;*/
     }
 
     _getClipPathId () {

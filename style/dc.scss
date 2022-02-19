@@ -115,8 +115,12 @@ $font_sans_serif: sans-serif;
 
     .custom-brush-handle {
       fill: $color_gallery;
-      stroke: $color_storm_dust;
       cursor: ew-resize;
+
+      .custom-brush-mark {
+        stroke: $color_storm_dust;
+
+      }
     }
   }
 
