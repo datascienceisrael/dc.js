@@ -1,6 +1,6 @@
 {
   "name": "@nshilon/dc.js",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "license": "Apache-2.0",
   "copyright": "2020",
   "description": "A multi-dimensional charting library built to work natively with crossfilter and rendered using d3.js ",
@@ -64,7 +64,7 @@
     "karma-safari-launcher": "git+https://github.com/RLovelett/karma-safari-launcher.git#safari-webdriver",
     "karma-summary-reporter": "^1.10.1",
     "load-grunt-tasks": "~4",
-    "node-sass": "^4.14.1",
+    "node-sass": "^7.0.1",
     "reductio": "0.6.x",
     "regression": "^2.0.1",
     "rollup": "^1.32.1",

@@ -390,7 +390,7 @@ div.dc-html-legend {
 .dc-chart .filter {
 
   background: #CCD3E1;
-  border-radius: 2px;
+
   margin: 4px;
   display: inline-flex;
   flex-flow: row nowrap;
@@ -398,12 +398,10 @@ div.dc-html-legend {
 
   padding: 3px 6px;
 
-  border-radius: 4px;
-
   box-shadow: 0px 0px 3px 0px #4442;
 
   &:hover {
-    box-shadow: 1px 1px 3px 1px #4444;
+    box-shadow: 0px 0px 3px 1px #4448;
   }
 
 
