@@ -88,7 +88,7 @@ export class RowChart extends CapMixin(ColorMixin(MarginMixin)) {
         this._calculateAxisScale();
 
         if (axisG.empty()) {
-            axisG = this._g.append('g').attr('class', 'axis');
+            axisG = this._g.append('g').attr('class', 'axis x');
         }
         axisG.attr('transform', `translate(0, ${this.effectiveHeight()})`);
 
