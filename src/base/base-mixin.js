@@ -83,6 +83,7 @@ export class BaseMixin {
         this._root = undefined;
         this._svg = undefined;
         this._isChild = undefined;
+        this._isMultiple = true;
 
         this._minWidth = 200;
         this._defaultWidthCalc = element => {
@@ -1152,7 +1153,12 @@ export class BaseMixin {
     onClick(datum) {
         const filter = this.keyAccessor()(datum);
         events.trigger(() => {
-            this.filter(filter);
+            if (this.multiple()) {
+                this.filter(filter);
+            }
+            else {
+                this.replaceFilter(filter === this.filter() ? null : filter);
+            }
             this.redrawGroup();
         });
     }
@@ -1411,6 +1417,15 @@ export class BaseMixin {
         }
         this._legend = legend;
         this._legend.parent(this);
+        return this;
+    }
+
+    multiple(isMultiple) {
+        if (!arguments.length) {
+            return this._isMultiple;
+        }
+        this._isMultiple = isMultiple;
+
         return this;
     }
 
