@@ -469,7 +469,7 @@ export class LineChart extends StackMixin {
     _showDot (dot) {
         dot.style('fill-opacity', 0.8);
         dot.style('stroke-opacity', 0.8);
-        dot.attr('r', this._dotRadius);
+        dot.attr('r', 1.1 * this._dotRadius);
         return dot;
     }
 

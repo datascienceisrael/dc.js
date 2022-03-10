@@ -95,6 +95,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
 
         this._useRightYAxis = false;
         this._useTopXAxis = false;
+        this._useBottomXAxis = true;
     }
 
     /**
@@ -454,6 +455,22 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         }
 
         this._useTopXAxis = useTopXAxis;
+        return this;
+    }
+
+    useBottomXAxis (useBottomXAxis) {
+        if (!arguments.length) {
+            return this._useBottomXAxis;
+        }
+
+        // // We need to warn if value is changing after self._yAxis was created
+        // if (this._useBottomXAxis !== useBottomXAxis && this._xAxis) {
+        //     logger.warn('Value of useTopXAxis has been altered, after xAxis was created. ' +
+        //         'You might get unexpected yAxis behavior. ' +
+        //         'Make calls to useTopXAxis sooner in your chart creation process.');
+        // }
+        //
+        this._useBottomXAxis = useBottomXAxis;
         return this;
     }
 
@@ -1226,8 +1243,10 @@ Z" fill="#15C89D"/>
 
         this.plotData();
 
-        if (this.elasticX() || this._resizing || render) {
-            this.renderXAxis(this.g());
+        if ( this.useBottomXAxis()) {
+            if (this.elasticX() || this._resizing || render) {
+                this.renderXAxis(this.g());
+            }
         }
 
         if (this.elasticY() || this._resizing || render) {
