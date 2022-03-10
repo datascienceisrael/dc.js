@@ -271,7 +271,7 @@ export class Guideline {
                 // find the nearest point in data to the
                 const dx = xScale.invert(ev.x - offset);
 
-                this._drawGuidelineables(dx, ev.x - offset, this._parent.height() - margins.top - margins.bottom);
+                this._drawGuidelineables(dx, ev.x - offset);
                 // const guidelineables = this._parent.guidelineables(x);
                 // console.table(guidelineables.map(({data}) => data));
                 // // debugger;
@@ -290,7 +290,8 @@ export class Guideline {
 
     }
 
-    _drawGuidelineables(dx, x, h) {
+    _drawGuidelineables(dx, x) {
+        const yScale = this._parent.y();
 
         const g = this._parent.svg().select('g.dc-guideline')
         let guidelineables = this._parent.guidelineables(dx);
@@ -304,14 +305,16 @@ export class Guideline {
         let items = g.selectAll('g.dc-guideline-box').data([guidelineables])
             .join('g')
             .attr('class', 'dc-guideline-box')
-            .attr('transform', `translate(${x}, ${h/2})`)
             .selectAll('g.dc-guideline-item')
-            .data(d => d);
+            .data(d => d)
+            .attr('transform', d => `translate(${x}, ${yScale(d.chart.valueAccessor()(d.data))})`)
+        ;
 
         const itemEnter = items
                 .enter()
                 .append('g')
                 .attr('class', 'dc-guideline-item')
+                .attr('transform', d => `translate(${x}, ${yScale(d.chart.valueAccessor()(d.data))})`)
 
 
 
@@ -346,7 +349,7 @@ export class Guideline {
         } else {
             itemEnter
                 .append('circle')
-                .attr('r', this._itemHeight/2)
+                .attr('r', this._itemHeight / 2)
                 // .attr('height', this._itemHeight)
                 .attr('fill', d => d ? d.color : 'blue');
         }

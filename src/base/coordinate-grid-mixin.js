@@ -1514,11 +1514,11 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
     }
 
     guidelineables(x) {
-        console.log(this, x);
+        // console.log(this, x);
         // do nothing in base, should be overridden by sub-function
         const indexes = this.data().map(({name, values}, i) => {
             const index = bisector(d => d.x).center(values, x);
-            return {color: this.getColor(values, i), name, data: values[index].data};
+            return {color: this.getColor(values, i), name, data: values[index].data, chart: this};
         });
         return indexes;
     }
