@@ -1,4 +1,4 @@
-import {min, max} from 'd3-array';
+import {min, max, bisector} from 'd3-array';
 import {scaleLinear} from 'd3-scale';
 import {axisRight} from 'd3-axis';
 
@@ -514,6 +514,16 @@ export class CompositeChart extends CoordinateGridMixin {
 
     xAxisMax () {
         return utils.add(max(this._getAllXAxisMaxFromChildCharts()), this.xAxisPadding(), this.xAxisPaddingUnit());
+    }
+
+    guidelineables (x) {
+        return this._children.reduce((items, child) => {
+            if (this._shareColors) {
+                child.colors(this.colors());
+            }
+            items.push.apply(items, child.guidelineables(x));
+            return items;
+        }, []);
     }
 
     legendables () {

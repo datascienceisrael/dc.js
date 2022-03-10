@@ -33,6 +33,7 @@ export * from './charts/geo-choropleth-chart';
 export * from './charts/heatmap';
 export * from './charts/html-legend';
 export * from './charts/legend';
+export * from './charts/guideline';
 export * from './charts/line-chart';
 export * from './charts/number-display';
 export * from './charts/general-display';

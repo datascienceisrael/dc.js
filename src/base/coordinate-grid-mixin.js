@@ -1,10 +1,11 @@
 import {schemeCategory10} from 'd3-scale-chromatic';
 import {timeDay} from 'd3-time';
-import {max, min} from 'd3-array';
+import {max, min, bisector} from 'd3-array';
 import {scaleBand, scaleLinear, scaleOrdinal} from 'd3-scale';
 import {axisTop, axisBottom, axisLeft, axisRight} from 'd3-axis';
 import {zoom, zoomIdentity} from 'd3-zoom';
 import {brushX} from 'd3-brush';
+
 
 import {ColorMixin} from './color-mixin';
 import {MarginMixin} from './margin-mixin';
@@ -34,7 +35,7 @@ const DEFAULT_AXIS_LABEL_PADDING = 12;
  * @mixes MarginMixin
  */
 export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
-    constructor () {
+    constructor() {
         super();
 
         this.colors(scaleOrdinal(schemeCategory10));
@@ -96,6 +97,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         this._useRightYAxis = false;
         this._useTopXAxis = false;
         this._useBottomXAxis = true;
+        this._guideline = null;
     }
 
     /**
@@ -105,13 +107,13 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * no effect on elastic scales.)
      * @returns {CoordinateGridMixin}
      */
-    rescale () {
+    rescale() {
         this._unitCount = undefined;
         this._resizing = true;
         return this;
     }
 
-    resizing (resizing) {
+    resizing(resizing) {
         if (!arguments.length) {
             return this._resizing;
         }
@@ -133,7 +135,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {CoordinateGridMixin} [rangeChart]
      * @returns {CoordinateGridMixin}
      */
-    rangeChart (rangeChart) {
+    rangeChart(rangeChart) {
         if (!arguments.length) {
             return this._rangeChart;
         }
@@ -147,7 +149,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {Array<Number|Date>} [extent=[1, Infinity]]
      * @returns {Array<Number|Date>|CoordinateGridMixin}
      */
-    zoomScale (extent) {
+    zoomScale(extent) {
         if (!arguments.length) {
             return this._zoomScale;
         }
@@ -160,7 +162,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {Boolean} [zoomOutRestrict=true]
      * @returns {Boolean|CoordinateGridMixin}
      */
-    zoomOutRestrict (zoomOutRestrict) {
+    zoomOutRestrict(zoomOutRestrict) {
         if (!arguments.length) {
             return this._zoomOutRestrict;
         }
@@ -168,7 +170,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         return this;
     }
 
-    _generateG (parent) {
+    _generateG(parent) {
         if (parent === undefined) {
             this._parent = this.svg();
         } else {
@@ -193,7 +195,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {SVGElement} [gElement]
      * @returns {SVGElement|CoordinateGridMixin}
      */
-    g (gElement) {
+    g(gElement) {
         if (!arguments.length) {
             return this._g;
         }
@@ -208,7 +210,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {Boolean} [mouseZoomable=false]
      * @returns {Boolean|CoordinateGridMixin}
      */
-    mouseZoomable (mouseZoomable) {
+    mouseZoomable(mouseZoomable) {
         if (!arguments.length) {
             return this._mouseZoomable;
         }
@@ -221,7 +223,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {SVGElement} [chartBodyG]
      * @returns {SVGElement}
      */
-    chartBodyG (chartBodyG) {
+    chartBodyG(chartBodyG) {
         if (!arguments.length) {
             return this._chartBodyG;
         }
@@ -244,7 +246,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {d3.scale} [xScale]
      * @returns {d3.scale|CoordinateGridMixin}
      */
-    x (xScale) {
+    x(xScale) {
         if (!arguments.length) {
             return this._x;
         }
@@ -254,7 +256,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         return this;
     }
 
-    xOriginalDomain () {
+    xOriginalDomain() {
         return this._xOriginalDomain;
     }
 
@@ -295,7 +297,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {Function} [xUnits=units.integers]
      * @returns {Function|CoordinateGridMixin}
      */
-    xUnits (xUnits) {
+    xUnits(xUnits) {
         if (!arguments.length) {
             return this._xUnits;
         }
@@ -323,7 +325,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {d3.axis} [xAxis=d3.axisBottom()]
      * @returns {d3.axis|CoordinateGridMixin}
      */
-    xAxis (xAxis) {
+    xAxis(xAxis) {
         if (!arguments.length) {
             if (!this._xAxis) {
                 this._xAxis = this._createXAxis();
@@ -340,7 +342,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {Boolean} [elasticX=false]
      * @returns {Boolean|CoordinateGridMixin}
      */
-    elasticX (elasticX) {
+    elasticX(elasticX) {
         if (!arguments.length) {
             return this._xElasticity;
         }
@@ -359,7 +361,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {Number|String} [padding=0]
      * @returns {Number|String|CoordinateGridMixin}
      */
-    xAxisPadding (padding) {
+    xAxisPadding(padding) {
         if (!arguments.length) {
             return this._xAxisPadding;
         }
@@ -380,7 +382,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {String} [unit=d3.timeDay]
      * @returns {String|CoordinateGridMixin}
      */
-    xAxisPaddingUnit (unit) {
+    xAxisPaddingUnit(unit) {
         if (!arguments.length) {
             return this._xAxisPaddingUnit;
         }
@@ -394,7 +396,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * x unit count is calculated using the {@link CoordinateGridMixin#xUnits xUnits} function.
      * @returns {Number}
      */
-    xUnitCount () {
+    xUnitCount() {
         if (this._unitCount === undefined) {
             if (this.isOrdinal()) {
                 // In this case it number of items in domain
@@ -419,7 +421,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {Boolean} [useRightYAxis=false]
      * @returns {Boolean|CoordinateGridMixin}
      */
-    useRightYAxis (useRightYAxis) {
+    useRightYAxis(useRightYAxis) {
         if (!arguments.length) {
             return this._useRightYAxis;
         }
@@ -442,7 +444,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {Boolean} [useTopXAxis=false]
      * @returns {Boolean|CoordinateGridMixin}
      */
-    useTopXAxis (useTopXAxis) {
+    useTopXAxis(useTopXAxis) {
         if (!arguments.length) {
             return this._useTopXAxis;
         }
@@ -458,7 +460,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         return this;
     }
 
-    useBottomXAxis (useBottomXAxis) {
+    useBottomXAxis(useBottomXAxis) {
         if (!arguments.length) {
             return this._useBottomXAxis;
         }
@@ -480,25 +482,25 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * trigger the appropriate logic.
      * @returns {Boolean}
      */
-    isOrdinal () {
+    isOrdinal() {
         return this.xUnits() === units.ordinal;
     }
 
-    _useOuterPadding () {
+    _useOuterPadding() {
         return true;
     }
 
-    _ordinalXDomain () {
+    _ordinalXDomain() {
         const groups = this._computeOrderedGroups(this.data());
         return groups.map(this.keyAccessor());
     }
 
-    _createXAxis () {
+    _createXAxis() {
         return this._useTopXAxis ? axisTop() : axisBottom();
     }
 
     // eslint-disable-next-line complexity
-    _prepareXAxis (g, render) {
+    _prepareXAxis(g, render) {
         if (!this.isOrdinal()) {
             if (this.elasticX()) {
                 this._x.domain([this.xAxisMin(), this.xAxisMax()]);
@@ -547,7 +549,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         this._renderVerticalGridLines(g);
     }
 
-    renderXAxis (g) {
+    renderXAxis(g) {
         let axisXG = g.select('g.x');
 
         if (axisXG.empty()) {
@@ -575,7 +577,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
             .attr('transform', `translate(${this.margins().left + this.xAxisLength() / 2},${axisXLabY})`);
     }
 
-    _renderVerticalGridLines (g) {
+    _renderVerticalGridLines(g) {
         let gridLineG = g.select(`g.${VERTICAL_CLASS}`);
 
         if (this._renderVerticalGridLine) {
@@ -616,11 +618,11 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         }
     }
 
-    _xAxisY () {
+    _xAxisY() {
         return this._useTopXAxis ? this.margins().top : this.height() - this.margins().bottom;
     }
 
-    xAxisLength () {
+    xAxisLength() {
         return this.effectiveWidth();
     }
 
@@ -631,7 +633,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {Number} [padding=12]
      * @returns {String}
      */
-    xAxisLabel (labelText, padding) {
+    xAxisLabel(labelText, padding) {
         if (!arguments.length) {
             return this._xAxisLabel;
         }
@@ -642,11 +644,11 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         return this;
     }
 
-    _createYAxis () {
+    _createYAxis() {
         return this._useRightYAxis ? axisRight() : axisLeft();
     }
 
-    _prepareYAxis (g) {
+    _prepareYAxis(g) {
         if (this._y === undefined || this.elasticY()) {
             if (this._y === undefined) {
                 this._y = scaleLinear();
@@ -667,7 +669,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         this._renderHorizontalGridLinesForAxis(g, this._y, this._yAxis);
     }
 
-    renderYAxisLabel (axisClass, text, rotation, labelXPosition) {
+    renderYAxisLabel(axisClass, text, rotation, labelXPosition) {
         labelXPosition = labelXPosition || this._yAxisLabelPadding;
 
         let axisYLab = this.g().select(`text.${Y_AXIS_LABEL_CLASS}.${axisClass}-label`);
@@ -686,7 +688,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
             .attr('transform', `translate(${labelXPosition},${labelYPosition}),rotate(${rotation})`);
     }
 
-    renderYAxisAt (axisClass, axis, position) {
+    renderYAxisAt(axisClass, axis, position) {
         let axisYG = this.g().select(`g.${axisClass}`);
         if (axisYG.empty()) {
             axisYG = this.g().append('g')
@@ -699,7 +701,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
             .call(axis);
     }
 
-    renderYAxis () {
+    renderYAxis() {
         const axisPosition = this._useRightYAxis ? (this.width() - this.margins().right) : this._yAxisX();
         this.renderYAxisAt('y', this._yAxis, axisPosition);
         const labelPosition = this._useRightYAxis ? (this.width() - this._yAxisLabelPadding) : this._yAxisLabelPadding;
@@ -707,7 +709,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         this.renderYAxisLabel('y', this.yAxisLabel(), rotation, labelPosition);
     }
 
-    _renderHorizontalGridLinesForAxis (g, scale, axis) {
+    _renderHorizontalGridLinesForAxis(g, scale, axis) {
         let gridLineG = g.select(`g.${HORIZONTAL_CLASS}`);
 
         if (this._renderHorizontalGridLine) {
@@ -749,7 +751,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         }
     }
 
-    _yAxisX () {
+    _yAxisX() {
         return this.useRightYAxis() ? this.width() - this.margins().right : this.margins().left;
     }
 
@@ -761,7 +763,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {Number} [padding=12]
      * @returns {String|CoordinateGridMixin}
      */
-    yAxisLabel (labelText, padding) {
+    yAxisLabel(labelText, padding) {
         if (!arguments.length) {
             return this._yAxisLabel;
         }
@@ -778,7 +780,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {d3.scale} [yScale]
      * @returns {d3.scale|CoordinateGridMixin}
      */
-    y (yScale) {
+    y(yScale) {
         if (!arguments.length) {
             return this._y;
         }
@@ -811,7 +813,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {d3.axisLeft|d3.axisRight} [yAxis]
      * @returns {d3.axisLeft|d3.axisRight|CoordinateGridMixin}
      */
-    yAxis (yAxis) {
+    yAxis(yAxis) {
         if (!arguments.length) {
             if (!this._yAxis) {
                 this._yAxis = this._createYAxis();
@@ -828,7 +830,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {Boolean} [elasticY=false]
      * @returns {Boolean|CoordinateGridMixin}
      */
-    elasticY (elasticY) {
+    elasticY(elasticY) {
         if (!arguments.length) {
             return this._yElasticity;
         }
@@ -841,7 +843,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {Boolean} [renderHorizontalGridLines=false]
      * @returns {Boolean|CoordinateGridMixin}
      */
-    renderHorizontalGridLines (renderHorizontalGridLines) {
+    renderHorizontalGridLines(renderHorizontalGridLines) {
         if (!arguments.length) {
             return this._renderHorizontalGridLine;
         }
@@ -854,7 +856,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {Boolean} [renderVerticalGridLines=false]
      * @returns {Boolean|CoordinateGridMixin}
      */
-    renderVerticalGridLines (renderVerticalGridLines) {
+    renderVerticalGridLines(renderVerticalGridLines) {
         if (!arguments.length) {
             return this._renderVerticalGridLine;
         }
@@ -866,7 +868,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * Calculates the minimum x value to display in the chart. Includes xAxisPadding if set.
      * @returns {*}
      */
-    xAxisMin () {
+    xAxisMin() {
         const m = min(this.data(), e => this.keyAccessor()(e));
         return utils.subtract(m, this._xAxisPadding, this._xAxisPaddingUnit);
     }
@@ -875,7 +877,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * Calculates the maximum x value to display in the chart. Includes xAxisPadding if set.
      * @returns {*}
      */
-    xAxisMax () {
+    xAxisMax() {
         const m = max(this.data(), e => this.keyAccessor()(e));
         return utils.add(m, this._xAxisPadding, this._xAxisPaddingUnit);
     }
@@ -884,7 +886,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * Calculates the minimum y value to display in the chart. Includes yAxisPadding if set.
      * @returns {*}
      */
-    yAxisMin () {
+    yAxisMin() {
         const m = min(this.data(), e => this.valueAccessor()(e));
         return utils.subtract(m, this._yAxisPadding);
     }
@@ -893,7 +895,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * Calculates the maximum y value to display in the chart. Includes yAxisPadding if set.
      * @returns {*}
      */
-    yAxisMax () {
+    yAxisMax() {
         const m = max(this.data(), e => this.valueAccessor()(e));
         return utils.add(m, this._yAxisPadding);
     }
@@ -908,7 +910,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {Number|String} [padding=0]
      * @returns {Number|CoordinateGridMixin}
      */
-    yAxisPadding (padding) {
+    yAxisPadding(padding) {
         if (!arguments.length) {
             return this._yAxisPadding;
         }
@@ -916,7 +918,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         return this;
     }
 
-    yAxisHeight () {
+    yAxisHeight() {
         return this.effectiveHeight();
     }
 
@@ -929,7 +931,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {Function} [round]
      * @returns {Function|CoordinateGridMixin}
      */
-    round (round) {
+    round(round) {
         if (!arguments.length) {
             return this._round;
         }
@@ -937,7 +939,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         return this;
     }
 
-    _rangeBandPadding (_) {
+    _rangeBandPadding(_) {
         if (!arguments.length) {
             return this._fRangeBandPadding;
         }
@@ -945,7 +947,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         return this;
     }
 
-    _outerRangeBandPadding (_) {
+    _outerRangeBandPadding(_) {
         if (!arguments.length) {
             return this._fOuterRangeBandPadding;
         }
@@ -953,7 +955,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         return this;
     }
 
-    filter (_) {
+    filter(_) {
         if (!arguments.length) {
             return super.filter();
         }
@@ -977,7 +979,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
      * @param {d3.brush} [_]
      * @returns {d3.brush|CoordinateGridMixin}
      */
-    brush (_) {
+    brush(_) {
         if (!arguments.length) {
             return this._brush;
         }
@@ -985,7 +987,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         return this;
     }
 
-    renderBrush (g, doTransition) {
+    renderBrush(g, doTransition) {
         if (this._brushOn) {
             this._brush.on('start brush end', d3compat.eventHandler((d, evt) => this._brushing(evt)));
 
@@ -1002,7 +1004,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         }
     }
 
-    createBrushHandlePaths (gBrush) {
+    createBrushHandlePaths(gBrush) {
         const brushHandles = gBrush.selectAll(`.${CUSTOM_BRUSH_HANDLE_CLASS}`).data([{type: 'w'}, {type: 'e'}]);
 
         const brushHandlesEnter = brushHandles.enter()
@@ -1020,7 +1022,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
 
     }
 
-    extendBrush (brushSelection) {
+    extendBrush(brushSelection) {
         if (brushSelection && this.round()) {
             brushSelection[0] = this.round()(brushSelection[0]);
             brushSelection[1] = this.round()(brushSelection[1]);
@@ -1028,11 +1030,11 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         return brushSelection;
     }
 
-    brushIsEmpty (brushSelection) {
+    brushIsEmpty(brushSelection) {
         return !brushSelection || brushSelection[1] <= brushSelection[0];
     }
 
-    _brushing (evt) {
+    _brushing(evt) {
         if (this._ignoreBrushEvents) {
             return;
         }
@@ -1054,12 +1056,12 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
     }
 
     // This can be overridden in a derived chart. For example Composite chart overrides it
-    applyBrushSelection (rangedFilter) {
+    applyBrushSelection(rangedFilter) {
         this.replaceFilter(rangedFilter);
         this.redrawGroup();
     }
 
-    _withoutBrushEvents (closure) {
+    _withoutBrushEvents(closure) {
         const oldValue = this._ignoreBrushEvents;
         this._ignoreBrushEvents = true;
 
@@ -1070,7 +1072,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         }
     }
 
-    setBrushExtents (doTransition) {
+    setBrushExtents(doTransition) {
         this._withoutBrushEvents(() => {
             // Set boundaries of the brush, must set it before applying to self._gBrush
             this._brush.extent([[0, 0], [this.effectiveWidth(), this.effectiveHeight()]]);
@@ -1080,7 +1082,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
             .call(this._brush);
     }
 
-    redrawBrush (brushSelection, doTransition) {
+    redrawBrush(brushSelection, doTransition) {
         if (this._brushOn && this._gBrush) {
             if (this._resizing) {
                 this.setBrushExtents(doTransition);
@@ -1107,18 +1109,18 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
 
                 gBrush.selectAll(`g.${CUSTOM_BRUSH_HANDLE_CLASS}`)
                     .attr('display', null)
-                    .attr('transform', (d, i) => `translate(${this._x(brushSelection[i])-9}, ${this.effectiveHeight() / 2 - 13})`)
-                    /*.attr('d', d => this.resizeHandlePath(d))*/;
+                    .attr('transform', (d, i) => `translate(${this._x(brushSelection[i]) - 9}, ${this.effectiveHeight() / 2 - 13})`)
+                /*.attr('d', d => this.resizeHandlePath(d))*/;
             }
         }
         this.fadeDeselectedArea(brushSelection);
     }
 
-    fadeDeselectedArea (brushSelection) {
+    fadeDeselectedArea(brushSelection) {
         // do nothing, sub-chart should override this function
     }
 
-    resizeHandleMarks (d) {
+    resizeHandleMarks(d) {
         return `M6.73004 7.33333
         C6.73004 7.14924 6.58969 7 6.41657 7
         C6.24345 7 6.1031 7.14924 6.1031 7.33333V18.6667
@@ -1139,22 +1141,22 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
     }
 
     // borrowed from Crossfilter example
-    resizeHandlePath (d) {
+    resizeHandlePath(d) {
 
-/*<svg width="17" height="26" viewBox="0 0 17 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M3.09383 5.5 
-C3.09383 2.46243 5.56387 0 8.61082 0 
-C11.6578 0 14.1278 2.46243 14.1278 5.5 
-V20.5 
-C14.1278 23.5376 11.6578 26 8.61082 26 
-C5.56387 26 3.09383 23.5376 3.09383 20.5
-V5.5
-Z" fill="#15C89D"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M6.73004 7.33333C6.73004 7.14924 6.58969 7 6.41657 7C6.24345
-7 6.1031 7.14924 6.1031 7.33333V18.6667C6.1031 18.8508 6.24345 19 6.41657 19C6.58969 19 6.73003 18.8508 6.73003 18.6667L6.73004
-7.33333ZM10.1155 7.33333C10.1155 7.14924 9.97512 7 9.802 7C9.62888 7 9.48853 7.14924 9.48853 7.33333L9.48853 18.6667C9.48853
-18.8508 9.62888 19 9.802 19C9.97512 19 10.1155 18.8508 10.1155 18.6667L10.1155 7.33333Z" fill="#139878"/>
-</svg>*/
+        /*<svg width="17" height="26" viewBox="0 0 17 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3.09383 5.5
+        C3.09383 2.46243 5.56387 0 8.61082 0
+        C11.6578 0 14.1278 2.46243 14.1278 5.5
+        V20.5
+        C14.1278 23.5376 11.6578 26 8.61082 26
+        C5.56387 26 3.09383 23.5376 3.09383 20.5
+        V5.5
+        Z" fill="#15C89D"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M6.73004 7.33333C6.73004 7.14924 6.58969 7 6.41657 7C6.24345
+        7 6.1031 7.14924 6.1031 7.33333V18.6667C6.1031 18.8508 6.24345 19 6.41657 19C6.58969 19 6.73003 18.8508 6.73003 18.6667L6.73004
+        7.33333ZM10.1155 7.33333C10.1155 7.14924 9.97512 7 9.802 7C9.62888 7 9.48853 7.14924 9.48853 7.33333L9.48853 18.6667C9.48853
+        18.8508 9.62888 19 9.802 19C9.97512 19 10.1155 18.8508 10.1155 18.6667L10.1155 7.33333Z" fill="#139878"/>
+        </svg>*/
 
         return `M3.09383 5.5
         C3.09383 2.46243 5.56387 0 8.61082 0
@@ -1166,13 +1168,13 @@ Z" fill="#15C89D"/>
         Z`;
 
 
-/*        d = d.type;
-        const e = +(d === 'e'), x = e ? 1 : -1, y = this.effectiveHeight() / 3;
-        return `M0,${y} A6,6 0 0 ${e} ${6.5 * x},${y + 6} V${2 * y - 6} A6,6 0 0 ${e} ${0.5 * x},${2 * y} Z` +
-            `M${2.5 * x},${y + 8 }V${2 * y - 8}M${4.5 * x},${y + 8}V${2 * y - 8}`;*/
+        /*        d = d.type;
+                const e = +(d === 'e'), x = e ? 1 : -1, y = this.effectiveHeight() / 3;
+                return `M0,${y} A6,6 0 0 ${e} ${6.5 * x},${y + 6} V${2 * y - 6} A6,6 0 0 ${e} ${0.5 * x},${2 * y} Z` +
+                    `M${2.5 * x},${y + 8 }V${2 * y - 8}M${4.5 * x},${y + 8}V${2 * y - 8}`;*/
     }
 
-    _getClipPathId () {
+    _getClipPathId() {
         return `${this.anchorName().replace(/[ .#=\[\]"]/g, '-')}-clip`;
     }
 
@@ -1183,7 +1185,7 @@ Z" fill="#15C89D"/>
      * @param {Number} [padding=5]
      * @returns {Number|CoordinateGridMixin}
      */
-    clipPadding (padding) {
+    clipPadding(padding) {
         if (!arguments.length) {
             return this._clipPadding;
         }
@@ -1191,7 +1193,7 @@ Z" fill="#15C89D"/>
         return this;
     }
 
-    _generateClipPath () {
+    _generateClipPath() {
         const defs = utils.appendOrSelect(this._parent, 'defs');
         // cannot select <clippath> elements; bug in WebKit, must select by id
         // https://groups.google.com/forum/#!topic/d3-js/6EpAzQ2gU9I
@@ -1206,10 +1208,10 @@ Z" fill="#15C89D"/>
             .attr('transform', `translate(-${this._clipPadding}, -${this._clipPadding})`);
     }
 
-    _preprocessData () {
+    _preprocessData() {
     }
 
-    _doRender () {
+    _doRender() {
         this.resetSvg();
 
         this._preprocessData();
@@ -1221,10 +1223,12 @@ Z" fill="#15C89D"/>
 
         this._configureMouseZoom();
 
+        this._drawGuideline(true);
+
         return this;
     }
 
-    _doRedraw () {
+    _doRedraw() {
         this._preprocessData();
 
         this._drawChart(false);
@@ -1233,7 +1237,14 @@ Z" fill="#15C89D"/>
         return this;
     }
 
-    _drawChart (render) {
+    _drawGuideline(render) {
+        if ( this._guideline ){
+            this._guideline.render()
+        }
+
+    }
+
+    _drawChart(render) {
         if (this.isOrdinal()) {
             this._brushOn = false;
         }
@@ -1243,7 +1254,7 @@ Z" fill="#15C89D"/>
 
         this.plotData();
 
-        if ( this.useBottomXAxis()) {
+        if (this.useBottomXAxis()) {
             if (this.elasticX() || this._resizing || render) {
                 this.renderXAxis(this.g());
             }
@@ -1263,7 +1274,7 @@ Z" fill="#15C89D"/>
         this.resizing(false);
     }
 
-    _configureMouseZoom () {
+    _configureMouseZoom() {
         // Save a copy of original x scale
         this._origX = this._x.copy();
 
@@ -1274,7 +1285,7 @@ Z" fill="#15C89D"/>
         }
     }
 
-    _enableMouseZoom () {
+    _enableMouseZoom() {
         this._hasBeenMouseZoomable = true;
 
         const extent = [[0, 0], [this.effectiveWidth(), this.effectiveHeight()]];
@@ -1298,11 +1309,11 @@ Z" fill="#15C89D"/>
         this._updateD3zoomTransform();
     }
 
-    _disableMouseZoom () {
+    _disableMouseZoom() {
         this.root().call(this._nullZoom);
     }
 
-    _zoomHandler (newDomain, noRaiseEvents) {
+    _zoomHandler(newDomain, noRaiseEvents) {
         let domFilter;
 
         if (this._hasRangeSelected(newDomain)) {
@@ -1333,7 +1344,7 @@ Z" fill="#15C89D"/>
     }
 
     // event.transform.rescaleX(self._origX).domain() should give back newDomain
-    _domainToZoomTransform (newDomain, origDomain, xScale) {
+    _domainToZoomTransform(newDomain, origDomain, xScale) {
         const k = (origDomain[1] - origDomain[0]) / (newDomain[1] - newDomain[0]);
         const xt = -1 * xScale(newDomain[0]);
 
@@ -1341,7 +1352,7 @@ Z" fill="#15C89D"/>
     }
 
     // If we changing zoom status (for example by calling focus), tell D3 zoom about it
-    _updateD3zoomTransform () {
+    _updateD3zoomTransform() {
         if (this._zoom) {
             this._withoutZoomEvents(() => {
                 this._zoom.transform(this.root(), this._domainToZoomTransform(this.x().domain(), this._xOriginalDomain, this._origX));
@@ -1349,7 +1360,7 @@ Z" fill="#15C89D"/>
         }
     }
 
-    _withoutZoomEvents (closure) {
+    _withoutZoomEvents(closure) {
         const oldValue = this._ignoreZoomEvents;
         this._ignoreZoomEvents = true;
 
@@ -1360,7 +1371,7 @@ Z" fill="#15C89D"/>
         }
     }
 
-    _onZoom (evt) {
+    _onZoom(evt) {
         // ignore zoom events if it was caused by a programmatic change
         if (this._ignoreZoomEvents) {
             return;
@@ -1370,7 +1381,7 @@ Z" fill="#15C89D"/>
         this.focus(newDomain, false);
     }
 
-    _checkExtents (ext, outerLimits) {
+    _checkExtents(ext, outerLimits) {
         if (!ext || ext.length !== 2 || !outerLimits || outerLimits.length !== 2) {
             return ext;
         }
@@ -1405,7 +1416,7 @@ Z" fill="#15C89D"/>
      * @param {Boolean} [noRaiseEvents = false]
      * @return {undefined}
      */
-    focus (range, noRaiseEvents) {
+    focus(range, noRaiseEvents) {
         if (this._zoomOutRestrict) {
             // ensure range is within self._xOriginalDomain
             range = this._checkExtents(range, this._xOriginalDomain);
@@ -1420,11 +1431,11 @@ Z" fill="#15C89D"/>
         this._updateD3zoomTransform();
     }
 
-    refocused () {
+    refocused() {
         return !utils.arraysEqual(this.x().domain(), this._xOriginalDomain);
     }
 
-    focusChart (c) {
+    focusChart(c) {
         if (!arguments.length) {
             return this._focusChart;
         }
@@ -1453,7 +1464,7 @@ Z" fill="#15C89D"/>
      * @param {Boolean} [brushOn=true]
      * @returns {Boolean|CoordinateGridMixin}
      */
-    brushOn (brushOn) {
+    brushOn(brushOn) {
         if (!arguments.length) {
             return this._brushOn;
         }
@@ -1468,7 +1479,7 @@ Z" fill="#15C89D"/>
      * @param {Boolean} [brushOn=false]
      * @returns {Boolean|CoordinateGridMixin}
      */
-    parentBrushOn (brushOn) {
+    parentBrushOn(brushOn) {
         if (!arguments.length) {
             return this._parentBrushOn;
         }
@@ -1477,11 +1488,40 @@ Z" fill="#15C89D"/>
     }
 
     // Get the SVG rendered brush
-    gBrush () {
+    gBrush() {
         return this._gBrush;
     }
 
-    _hasRangeSelected (range) {
+    _hasRangeSelected(range) {
         return range instanceof Array && range.length > 1;
     }
+
+    /**
+     * Attach a Guideline widget to this chart. The widget will automatically draw tooltip
+     * based on the color setting and names associated with each group.
+     * @example
+     * chart.guideline(new Guideline().itemHeight(13).gap(5))
+     * @param {Guideline} [guideline]
+     * @returns {Guideline|CoordinateGridMixin}
+     */
+    guideline(guideline) {
+        if (!arguments.length) {
+            return this._guideline;
+        }
+        this._guideline = guideline;
+        this._guideline.parent(this);
+        return this;
+    }
+
+    guidelineables(x) {
+        console.log(this, x);
+        // do nothing in base, should be overridden by sub-function
+        const indexes = this.data().map(({name, values}, i) => {
+            const index = bisector(d => d.x).center(values, x);
+            return {color: this.getColor(values, i), name, data: values[index].data};
+        });
+        return indexes;
+    }
+
+
 }

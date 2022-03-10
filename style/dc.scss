@@ -314,6 +314,25 @@ $font_sans_serif: sans-serif;
   }
 }
 
+.dc-guideline-box {
+  pointer-events: none;
+}
+
+.dc-guideline {
+  cursor: pointer;
+  /*stroke-dasharray: 2,2;*/
+
+  line {
+    stroke-opacity: 0.2;
+  }
+
+  line.active {
+    stroke-opacity: 0.8;
+    stroke-width: 3px;
+
+  }
+}
+
 .dc-legend {
   font-size: 11px;
 
