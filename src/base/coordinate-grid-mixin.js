@@ -1238,7 +1238,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
     }
 
     _drawGuideline(render) {
-        if ( this._guideline ){
+        if (this._guideline) {
             this._guideline.render()
         }
 
@@ -1513,15 +1513,34 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         return this;
     }
 
-    guidelineables(x) {
+    guidelineables(dx) {
         // console.log(this, x);
         // do nothing in base, should be overridden by sub-function
-        const indexes = this.data().map(({name, values}, i) => {
-            const index = bisector(d => d.x).center(values, x);
-            return {color: this.getColor(values, i), name, data: values[index].data, chart: this};
+        // const values = this.selectAll('.dot').data();
+        // const index = bisector(d => d.x).center(values, dx);
+        // return this.selectAll('.dot').filter((_, i) => i === index);
+        const result = this.data().map(({name, values}, i) => {
+            const index = bisector(d => d.x).center(values, dx);
+            return {
+                color: this.getColor(values, i),
+                name,
+                index,
+                data: values[index].data,
+                chart: this
+            };
         });
-        return indexes;
+
+        return result;
     }
 
+    highlightGuidelineables(dx) {
+        this.selectAll('.dot').classed('active', false);
+
+        if (dx !== undefined) {
+            const values = this.selectAll('.dot').data();
+            const index = bisector(d => d.x).center(values, dx);
+            this.selectAll('.dot').filter((_, i) => i === index).classed('active', true);
+        }
+    }
 
 }

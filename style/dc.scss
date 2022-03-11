@@ -318,18 +318,27 @@ $font_sans_serif: sans-serif;
   pointer-events: none;
 }
 
+.dot.active {
+  r: 7;
+  stroke-opacity: .9 !important;
+  stroke-width: .4;
+  fill-opacity: .9 !important;
+}
+
 .dc-guideline {
   cursor: pointer;
-  /*stroke-dasharray: 2,2;*/
+  fill: #444;
+  font-size: 11px;
+
 
   line {
-    stroke-opacity: 0.2;
+    stroke-opacity: 0.8;
+    stroke: #15c89d;
+    stroke-width: 2px;
   }
 
   line.active {
-    stroke-opacity: 0.8;
-    stroke-width: 3px;
-
+    stroke-opacity: 1;
   }
 }
 

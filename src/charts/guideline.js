@@ -16,7 +16,7 @@ const LABEL_GAP = 2;
  * @returns {Guideline}
  */
 export class Guideline {
-    constructor() {
+    constructor () {
         this._parent = undefined;
         this._x = 0;
         this._y = 0;
@@ -26,18 +26,16 @@ export class Guideline {
         this._guidelineWidth = 560;
 
         this._autoItemWidth = false;
-        // this._guidelineText = pluck('name');
-        this._guidelineText = d => {
-            return `${d.data.key}: ${d.data.value}`
-        }/*pluck('name')*/;
+
+        this._guidelineText = null;
         this._maxItems = undefined;
-        this._highlightSelected = false;
-        this._keyboardAccessible = false;
+        this._highlightSelected = true;
+
 
         this._g = undefined;
     }
 
-    parent(p) {
+    parent (p) {
         if (!arguments.length) {
             return this._parent;
         }
@@ -50,7 +48,7 @@ export class Guideline {
      * @param  {Number} [x=0]
      * @returns {Number|Guideline}
      */
-    x(x) {
+    x (x) {
         if (!arguments.length) {
             return this._x;
         }
@@ -63,7 +61,7 @@ export class Guideline {
      * @param  {Number} [y=0]
      * @returns {Number|Guideline}
      */
-    y(y) {
+    y (y) {
         if (!arguments.length) {
             return this._y;
         }
@@ -76,7 +74,7 @@ export class Guideline {
      * @param  {Number} [gap=5]
      * @returns {Number|Guideline}
      */
-    gap(gap) {
+    gap (gap) {
         if (!arguments.length) {
             return this._gap;
         }
@@ -90,7 +88,7 @@ export class Guideline {
      * @param {String} [highlightSelected]
      * @return {String|dc.guideline}
      **/
-    highlightSelected(highlightSelected) {
+    highlightSelected (highlightSelected) {
         if (!arguments.length) {
             return this._highlightSelected;
         }
@@ -103,7 +101,7 @@ export class Guideline {
      * @param  {Number} [itemHeight=12]
      * @returns {Number|Guideline}
      */
-    itemHeight(itemHeight) {
+    itemHeight (itemHeight) {
         if (!arguments.length) {
             return this._itemHeight;
         }
@@ -116,7 +114,7 @@ export class Guideline {
      * @param  {Number} [guidelineWidth=500]
      * @returns {Number|Guideline}
      */
-    guidelineWidth(guidelineWidth) {
+    guidelineWidth (guidelineWidth) {
         if (!arguments.length) {
             return this._guidelineWidth;
         }
@@ -131,7 +129,7 @@ export class Guideline {
      * @param  {Boolean} [autoItemWidth=false]
      * @returns {Boolean|Guideline}
      */
-    autoItemWidth(autoItemWidth) {
+    autoItemWidth (autoItemWidth) {
         if (!arguments.length) {
             return this._autoItemWidth;
         }
@@ -155,9 +153,9 @@ export class Guideline {
      * // create guideline displaying group counts
      * chart.guideline(new Guideline().guidelineText(function(d) { return d.name + ': ' d.data; }))
      */
-    guidelineText(guidelineText) {
+    guidelineText (guidelineText) {
         if (!arguments.length) {
-            return this._guidelineText;
+            return this._guidelineText || (d => this._parent.valueAccessor()(d.data));
         }
         this._guidelineText = guidelineText;
         return this;
@@ -168,7 +166,7 @@ export class Guideline {
      * @param  {Number} [maxItems]
      * @return {Guideline}
      */
-    maxItems(maxItems) {
+    maxItems (maxItems) {
         if (!arguments.length) {
             return this._maxItems;
         }
@@ -176,74 +174,21 @@ export class Guideline {
         return this;
     }
 
-    /**
-     * If set, individual guideline items will be focusable from keyboard and on pressing Enter or Space
-     * will behave as if clicked on.
-     *
-     * If `svgDescription` on the parent chart has not been explicitly set, will also set the default
-     * SVG description text to the class constructor name, like BarChart or HeatMap, and make the entire
-     * SVG focusable.
-     * @param {Boolean} [keyboardAccessible=false]
-     * @returns {Boolean|Guideline}
-     */
-    keyboardAccessible(keyboardAccessible) {
-        if (!arguments.length) {
-            return this._keyboardAccessible;
-        }
-        this._keyboardAccessible = keyboardAccessible;
-        return this;
-    }
-
     // Implementation methods
 
-    _guidelineItemHeight() {
+    _guidelineItemHeight () {
         return this._gap + this._itemHeight;
     }
 
-    _makeGuidelineKeyboardAccessible() {
 
-        if (!this._parent._svgDescription) {
 
-            this._parent.svg().append('desc')
-                .attr('id', `desc-id-${this._parent.__dcFlag__}`)
-                .html(`${this._parent.svgDescription()}`);
-
-            this._parent.svg()
-                .attr('tabindex', '0')
-                .attr('role', 'img')
-                .attr('aria-labelledby', `desc-id-${this._parent.__dcFlag__}`);
-        }
-
-        const tabElements = this._parent.svg()
-            .selectAll('.dc-guideline .dc-tabbable')
-            .attr('tabindex', 0);
-
-        tabElements
-            .on('keydown', d3compat.eventHandler((d, event) => {
-                // trigger only if d is an object
-                if (event.keyCode === 13 && typeof d === 'object') {
-                    d.chart.guidelineToggle(d)
-                }
-                // special case for space key press - prevent scrolling
-                if (event.keyCode === 32 && typeof d === 'object') {
-                    d.chart.guidelineToggle(d)
-                    event.preventDefault();
-                }
-            }))
-            .on('focus', d3compat.eventHandler(d => {
-                this._parent.guidelineHighlight(d);
-            }))
-            .on('blur', d3compat.eventHandler(d => {
-                this._parent.guidelineReset(d);
-            }));
-    }
-
-    render(isRender) {
+    render (isRender) {
         this._parent.svg().select('g.dc-guideline').remove();
         const margins = this._parent.margins();
-        this._g = this._parent.select('.chart-body').append('g')
+
+        this._g = this._parent.svg().append('g')
             .attr('class', 'dc-guideline')
-        /*.attr('transform', `translate(${margins.left},${margins.top})`)*/;
+            .attr('transform', `translate(${margins.left},${margins.top})`);
 
         const xScale = this._parent.x();
 
@@ -257,7 +202,7 @@ export class Guideline {
 
 
         const line = this._g.append('line')
-            .attr('stroke', 'red')
+            .attr('stroke', '#444')
             .attr('x1', 0)
             .attr('x2', 0)
             .attr('y1', 0)
@@ -267,16 +212,17 @@ export class Guideline {
             .on('mousemove', (ev, ...props) => {
                 // const data = this._parent.data();
 
-                const offset = boundingRect.node().getBoundingClientRect().left;
+                const {left, width} = boundingRect.node().getBoundingClientRect();
                 // find the nearest point in data to the
-                const dx = xScale.invert(ev.x - offset);
+                const dx = xScale.invert(ev.x - left);
 
-                this._drawGuidelineables(dx, ev.x - offset);
+                console.log(ev.x - left, width, (ev.x - left) > (width - 40))
+                this._drawGuidelineables(dx, ev.x - left, (ev.x - left) > (width - 40));
                 // const guidelineables = this._parent.guidelineables(x);
                 // console.table(guidelineables.map(({data}) => data));
                 // // debugger;
-                line.attr('x1', ev.x - offset)
-                    .attr('x2', ev.x - offset)
+                line.attr('x1', ev.x - left)
+                    .attr('x2', ev.x - left)
 
                 // this._g.selectAll('g.dc-guideline-item').data(guidelineables);
             })
@@ -290,7 +236,7 @@ export class Guideline {
 
     }
 
-    _drawGuidelineables(dx, x) {
+    _drawGuidelineables (dx, x, alignRight) {
         const yScale = this._parent.y();
 
         const g = this._parent.svg().select('g.dc-guideline')
@@ -302,7 +248,8 @@ export class Guideline {
             guidelineables = guidelineables.slice(0, this._maxItems);
         }
 
-        let items = g.selectAll('g.dc-guideline-box').data([guidelineables])
+        const items = g.selectAll('g.dc-guideline-box')
+            .data([guidelineables])
             .join('g')
             .attr('class', 'dc-guideline-box')
             .selectAll('g.dc-guideline-item')
@@ -329,6 +276,7 @@ export class Guideline {
                         }))*/;
 
         if (this._highlightSelected) {
+            this._parent.highlightGuidelineables(dx);
             itemEnter.classed(constants.SELECTED_CLASS, d => filters.indexOf(d.name) !== -1);
         }
 
@@ -336,46 +284,39 @@ export class Guideline {
         // this._g.selectAll('g.dc-guideline-item')
         //     .classed('fadeout', d => d.chart.isGuidelineableHidden(d));
 
-        if (guidelineables.some(pluck('dashstyle'))) {
-            itemEnter
-                .append('line')
-                .attr('x1', 0)
-                .attr('y1', this._itemHeight / 2)
-                .attr('x2', this._itemHeight)
-                .attr('y2', this._itemHeight / 2)
-                .attr('stroke-width', 2)
-                .attr('stroke-dasharray', pluck('dashstyle'))
-                .attr('stroke', pluck('color'));
-        } else {
-            itemEnter
-                .append('circle')
-                .attr('r', this._itemHeight / 2)
-                // .attr('height', this._itemHeight)
-                .attr('fill', d => d ? d.color : 'blue');
-        }
+        // itemEnter
+        //     .append('circle')
+        //     .attr('r', this._itemHeight / 2)
+        //     // .attr('height', this._itemHeight)
+        //     .attr('fill', d => d ? d.color : 'blue');
 
-        {
+        itemEnter.append('rect')
+            .attr('fill-opacity', .4)
+            .attr('fill', '#fafafa')
+            .attr('x', alignRight ? (-40 - this._itemHeight - LABEL_GAP) : this._itemHeight + LABEL_GAP)
+            .attr('y', -10)
+            .attr('width', 40)
+            .attr('height', () => this._itemHeight);
 
 
-            itemEnter.append('text')
-                .text(this._guidelineText)
-                .classed('dc-tabbable', this._keyboardAccessible)
-                .attr('x', this._itemHeight + LABEL_GAP)
-                .attr('y', () => this._itemHeight / 2 + (this.clientHeight ? this.clientHeight : 13) / 2 - 2);
+        itemEnter.append('text')
+            .text(this.guidelineText())
+            .attr('text-anchor', alignRight ? 'end' : 'start')
+            .attr('x', alignRight ? -40 - (this._itemHeight + LABEL_GAP) : this._itemHeight + LABEL_GAP)
+            .attr('y', 0);
 
+        items.select('rect')
+            .attr('x', alignRight ? -40 - (this._itemHeight + LABEL_GAP) : this._itemHeight + LABEL_GAP)
 
-            // items = g.selectAll('g.dc-guideline-item');
-            items.select('text').text(this._guidelineText)
+        items.select('text').text(this.guidelineText())
+            .attr('text-anchor', alignRight ? 'end' : 'start')
+            .attr('x', (alignRight ? -1 : 1) * (this._itemHeight + LABEL_GAP))
 
-            if (this._keyboardAccessible) {
-                this._makeGuidelineKeyboardAccessible();
-            }
-        }
 
         // let cumulativeGuidelineTextWidth = 0;
         // let row = 0;
 
-        itemEnter.attr('transform', (d, i) => `translate(0,${i * this._guidelineItemHeight()})`);
+        // itemEnter.attr('transform', (d, i) => `translate(0,${i * this._guidelineItemHeight()})`);
     }
 
 }
