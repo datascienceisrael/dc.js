@@ -330,6 +330,12 @@ $font_sans_serif: sans-serif;
   fill: #444;
   font-size: 11px;
 
+  .dc-guideline-item {
+    text {
+      font-weight: bold;
+    }
+  }
+
 
   line {
     stroke-opacity: 0.8;
