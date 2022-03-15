@@ -319,7 +319,7 @@ $font_sans_serif: sans-serif;
 }
 
 .dot.active {
-  r: 7;
+  r: 5;
   stroke-opacity: .9 !important;
   stroke-width: .4;
   fill-opacity: .9 !important;
@@ -334,6 +334,22 @@ $font_sans_serif: sans-serif;
     text {
       font-weight: bold;
     }
+  }
+
+  .dc-guideline-key-bg {
+    fill: #15c89d;
+    /*fill-opacity: .4;*/
+  }
+
+  .dc-guideline-key {
+    transform: rotate(-90deg);
+    transform-box: fill-box;
+    transform-origin: right;
+    text-anchor: end;
+    fill: white;
+    font-size: 9px;
+    font-weight: bold;
+    text-shadow: 0 0 3px #0008;
   }
 
 

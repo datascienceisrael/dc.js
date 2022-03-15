@@ -28,6 +28,7 @@ export class Guideline {
         this._autoItemWidth = false;
 
         this._guidelineText = null;
+        this._guidelineKey = null;
         this._maxItems = undefined;
         this._highlightSelected = true;
 
@@ -161,6 +162,14 @@ export class Guideline {
         return this;
     }
 
+    guidelineKey (guidelineKey) {
+        if (!arguments.length) {
+            return this._guidelineKey || (d => d.chart.keyAccessor()(d.data));
+        }
+        this._guidelineKey = guidelineKey;
+        return this;
+    }
+
     /**
      * Maximum number of guideline items to display
      * @param  {Number} [maxItems]
@@ -248,20 +257,40 @@ export class Guideline {
             guidelineables = guidelineables.slice(0, this._maxItems);
         }
 
-        const items = g.selectAll('g.dc-guideline-box')
+        const box = g.selectAll('g.dc-guideline-box')
             .data([guidelineables])
-            .join('g')
-            .attr('class', 'dc-guideline-box')
+            .join(enter => {
+                const b = enter.append('g').attr('class', 'dc-guideline-box');
+
+                b.append('rect').attr('class', 'dc-guideline-key-bg')
+                    .attr('width', 10)
+                    .attr('height', 60)
+                    .attr('rx', 2)
+
+
+                b.append('text').attr('class', 'dc-guideline-key')
+            }).attr('transform', `translate(${x},0)`)
+
+        box.select('rect.dc-guideline-key-bg')
+                .attr('x', alignRight ? 0 : -10)
+
+        box.select('text.dc-guideline-key')
+            .datum(d => d && d[0])
+            .attr('dx', alignRight ? 5 : -5)
+            .attr('dy', 8)
+            .text(d => this.guidelineKey()(d))
+
+        const items = box
             .selectAll('g.dc-guideline-item')
             .data(d => d)
-            .attr('transform', d => `translate(${x}, ${d.chart._y(d.chart.valueAccessor()(d.data))})`)
+            .attr('transform', d => `translate(0, ${d.chart._y(d.chart.valueAccessor()(d.data))})`)
         ;
 
         const itemEnter = items
                 .enter()
                 .append('g')
                 .attr('class', 'dc-guideline-item')
-                .attr('transform', d => `translate(${x}, ${d.chart._y(d.chart.valueAccessor()(d.data))})`)
+                .attr('transform', d => `translate(0, ${d.chart._y(d.chart.valueAccessor()(d.data))})`)
 
 
 
