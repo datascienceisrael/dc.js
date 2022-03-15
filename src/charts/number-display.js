@@ -3,6 +3,8 @@ import {easeQuad} from 'd3-ease';
 import {interpolateNumber} from 'd3-interpolate';
 
 import {BaseMixin} from '../base/base-mixin';
+import {utils} from '../core/utils';
+
 
 const SPAN_CLASS = 'number-display';
 
@@ -38,6 +40,7 @@ export class NumberDisplay extends BaseMixin {
         super();
 
         this._formatNumber = format('.2s');
+        this._formatSecondary = format('.1%');
         this._html = {one: '', some: '', none: ''};
         this._lastValue = undefined;
         this._ariaLiveRegion = false;
@@ -114,7 +117,10 @@ export class NumberDisplay extends BaseMixin {
     }
 
     _doRender () {
-        const newValue = this.value();
+        const val = this.value();
+        const newValue = utils.isNumber(val) ? val : 'number' in val ? val['number']: 0;
+        const secondary = !utils.isNumber(val) && 'secondary' in val ? val['secondary'] : null;
+
         let span = this.selectAll(`.${SPAN_CLASS}`);
 
         if (span.empty()) {
@@ -152,6 +158,7 @@ export class NumberDisplay extends BaseMixin {
                     return t => {
                         let html = null;
                         const num = chart.formatNumber()(interp(t));
+                        const second = chart.formatSecondary()(secondary);
                         if (newValue === 0 && (chart._html.none !== '')) {
                             html = chart._html.none;
                         } else if (newValue === 1 && (chart._html.one !== '')) {
@@ -159,7 +166,7 @@ export class NumberDisplay extends BaseMixin {
                         } else if (chart._html.some !== '') {
                             html = chart._html.some;
                         }
-                        node.innerHTML = html ? html.replace('%number', num) : num;
+                        node.innerHTML = html ? html.replace('%number', num).replace('%secondary', second) : num;
                     };
                 });
         }
@@ -183,6 +190,13 @@ export class NumberDisplay extends BaseMixin {
         return this;
     }
 
+    formatSecondary (formatter) {
+        if (!arguments.length) {
+            return this._formatSecondary;
+        }
+        this._formatSecondary = formatter;
+        return this;
+    }
     /**
      * If set, the Number Display widget will have its aria-live attribute set to 'polite' which will
      * notify screen readers when the widget changes its value. Note that setting this method will also
