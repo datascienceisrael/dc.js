@@ -155,7 +155,7 @@ export class Guideline {
      */
     guidelineText (guidelineText) {
         if (!arguments.length) {
-            return this._guidelineText || (d => this._parent.valueAccessor()(d.data));
+            return this._guidelineText || (d => d.chart.title()(d.data));
         }
         this._guidelineText = guidelineText;
         return this;
@@ -216,7 +216,7 @@ export class Guideline {
                 // find the nearest point in data to the
                 const dx = xScale.invert(ev.x - left);
 
-                console.log(ev.x - left, width, (ev.x - left) > (width - 40))
+                // console.log(ev.x - left, width, (ev.x - left) > (width - 40))
                 this._drawGuidelineables(dx, ev.x - left, (ev.x - left) > (width - 40));
                 // const guidelineables = this._parent.guidelineables(x);
                 // console.table(guidelineables.map(({data}) => data));
@@ -254,14 +254,14 @@ export class Guideline {
             .attr('class', 'dc-guideline-box')
             .selectAll('g.dc-guideline-item')
             .data(d => d)
-            .attr('transform', d => `translate(${x}, ${yScale(d.chart.valueAccessor()(d.data))})`)
+            .attr('transform', d => `translate(${x}, ${d.chart._y(d.chart.valueAccessor()(d.data))})`)
         ;
 
         const itemEnter = items
                 .enter()
                 .append('g')
                 .attr('class', 'dc-guideline-item')
-                .attr('transform', d => `translate(${x}, ${yScale(d.chart.valueAccessor()(d.data))})`)
+                .attr('transform', d => `translate(${x}, ${d.chart._y(d.chart.valueAccessor()(d.data))})`)
 
 
 
@@ -276,7 +276,7 @@ export class Guideline {
                         }))*/;
 
         if (this._highlightSelected) {
-            this._parent.highlightGuidelineables(dx);
+            this._parent.guidelineHighlight(dx);
             itemEnter.classed(constants.SELECTED_CLASS, d => filters.indexOf(d.name) !== -1);
         }
 

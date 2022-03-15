@@ -529,6 +529,13 @@ export class CompositeChart extends CoordinateGridMixin {
         }, []);
     }
 
+    guidelineHighlight(dx) {
+        for (let j = 0; j < this._children.length; ++j) {
+            const child = this._children[j];
+            child.guidelineHighlight(dx);
+        }
+    }
+
     legendables() {
         return this._children.reduce((items, child) => {
             if (this._shareColors) {

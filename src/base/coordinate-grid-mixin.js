@@ -1533,13 +1533,13 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         return result;
     }
 
-    highlightGuidelineables(dx) {
-        this.selectAll('.dot').classed('active', false);
+    guidelineHighlight(dx) {
+        this._g.selectAll('.dot').classed('active', false);
 
         if (dx !== undefined) {
-            const values = this.selectAll('.dot').data();
+            const values = this._g.selectAll('.dot').data();
             const index = bisector(d => d.x).center(values, dx);
-            this.selectAll('.dot').filter((_, i) => i === index).classed('active', true);
+            this._g.selectAll('.dot').filter((_, i) => i === index).classed('active', true);
         }
     }
 
