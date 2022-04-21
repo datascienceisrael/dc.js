@@ -5,7 +5,9 @@ import { groups } from 'd3-array';
 
 import { d3compat } from '../core/config';
 
-const majorVer = +version[0];
+const majorVer = 7 /*+version[0]*/;
+
+console.log(majorVer)
 
 if (majorVer > 5) {
     Object.assign(d3compat, {
