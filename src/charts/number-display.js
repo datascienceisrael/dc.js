@@ -118,8 +118,8 @@ export class NumberDisplay extends BaseMixin {
 
     _doRender () {
         const val = this.value();
-        const newValue = utils.isNumber(val) ? val : 'number' in val ? val['number']: 0;
-        const secondary = !utils.isNumber(val) && 'secondary' in val ? val['secondary'] : null;
+        const newValue = utils.isNumber(val) ? val : val && 'number' in val ? val['number']: 0;
+        const secondary = !utils.isNumber(val) && val && 'secondary' in val ? val['secondary'] : null;
 
         let span = this.selectAll(`.${SPAN_CLASS}`);
 
