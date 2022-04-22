@@ -1519,7 +1519,7 @@ export class CoordinateGridMixin extends ColorMixin(MarginMixin) {
         // const values = this.selectAll('.dot').data();
         // const index = bisector(d => d.x).center(values, dx);
         // return this.selectAll('.dot').filter((_, i) => i === index);
-        const result = this.data().map(({name, values}, i) => {
+        const result = this.data().filter(({values}) => values && values.length > 0).map(({name, values}, i) => {
             const index = bisector(d => d.x).center(values, dx);
             return {
                 color: this.getColor(values, i),
