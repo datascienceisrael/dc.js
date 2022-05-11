@@ -130,6 +130,7 @@ export class BaseMixin {
             'preRedraw',
             'postRedraw',
             'filtered',
+            'changed',
             'zoomed',
             'renderlet',
             'pretransition');
@@ -871,6 +872,10 @@ export class BaseMixin {
 
     _invokeZoomedListener() {
         this._listeners.call('zoomed', this, this);
+    }
+
+    _invokeChangedListener(val) {
+        this._listeners.call('changed', this, this, val);
     }
 
     /**

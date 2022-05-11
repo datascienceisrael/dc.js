@@ -133,6 +133,8 @@ export class SelectMenu extends BaseMixin {
         events.trigger(() => {
             this.redrawGroup();
         });
+
+        super._invokeChangedListener(val);
     }
 
     _setAttributes () {
