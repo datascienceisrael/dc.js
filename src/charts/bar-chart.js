@@ -79,11 +79,16 @@ export class BarChart extends StackMixin {
         return super.render();
     }
 
-    plotData () {
+    plotData (i = 0, siblings = undefined) {
         let layers = this.chartBodyG().selectAll('g.stack')
             .data(this.data());
 
         this._calculateBarWidth();
+
+        if ( siblings?.length > 1 ){
+            this._barWidth /= siblings.length+ .5;
+            this.g().attr('transform', `translate(${Math.floor(i * this._barWidth)}, 0)`)
+        }
 
         layers = layers
             .enter()

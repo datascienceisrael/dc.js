@@ -234,6 +234,7 @@ export class CompositeChart extends CoordinateGridMixin {
     }
 
     plotData() {
+
         for (let i = 0; i < this._children.length; ++i) {
             const child = this._children[i];
 
@@ -257,7 +258,7 @@ export class CompositeChart extends CoordinateGridMixin {
                 child.yAxis(this.yAxis());
             }
 
-            child.plotData();
+            child.plotData(i, this._children);
 
             child._activateRenderlets();
         }
