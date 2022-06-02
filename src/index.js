@@ -38,6 +38,7 @@ export * from './charts/line-chart';
 export * from './charts/number-display';
 export * from './charts/general-display';
 export * from './charts/pie-chart';
+export * from './charts/treemap-chart';
 export * from './charts/row-chart';
 export * from './charts/scatter-plot';
 export * from './charts/select-menu';

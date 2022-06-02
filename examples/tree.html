@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>dc.js - Pie Chart Example</title>
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" type="text/css" href="../dist/style/dc.css"/>
+</head>
+<body>
+
+<div class="container">
+
+    <div id="test"></div>
+
+    <div id="my_dataviz"></div>
+
+    <label id="cap">Cap: <input type="range" min="4" max="180" value="4">
+    </label>
+
+    <script type="text/javascript" src="../node_modules/d3/dist/d3.js"></script>
+    <script type="text/javascript" src="../node_modules/crossfilter2/crossfilter.js"></script>
+    <script type="text/javascript" src="../dist/dc.js"></script>
+    <script type="text/javascript">
+
+        var chart = new dc.TreemapChart("#test");
+
+        d3.csv("data/countries-regions.csv")
+/*        d3.csv("data/data_hierarchy_2level.csv")*/
+            .then(function (data) {
+
+            var ndx = crossfilter(data),
+                runDimension = ndx.dimension(function (d) {
+                    return [d['Country or Area'], d['Region Name'] || '???'];
+                })
+            speedSumGroup = runDimension.group().reduceSum(function (d) {
+                return 1 /*+d.value*/;
+            });
+
+            chart
+                .width(768)
+                .height(480)
+                .dimension(runDimension)
+                .group(speedSumGroup)
+                .keyAccessor(d => d.key[0])
+                .parentAccessor(d => d.key[1])
+                .colorAccessor(d => d.key[1])
+                .colors(d3.scaleOrdinal().range(d3.schemeCategory10))
+                /*.cap(4)*/
+                // .legend(dc.legend().highlightSelected(true))
+                // workaround for #703: not enough data is accessible through .label() to display percentages
+                .on('pretransition', function (chart) {
+                    chart.selectAll('text.pie-slice').text(function (d) {
+                        return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2 * Math.PI) * 100) + '%';
+                    })
+                });
+
+            chart.render();
+        });
+
+        d3.select('#cap').on('change', ({target: {value}}) => {
+            if (chart.cap() !== +value) {
+                console.log(value);
+                chart.cap(+value).redraw()
+            }
+        })
+
+
+    </script>
+
+    <!--<script type="text/javascript">
+
+        var accent = d3.scaleOrdinal(d3.schemeAccent);
+
+        // set the dimensions and margins of the graph
+        const margin = {top: 10, right: 10, bottom: 10, left: 10},
+            width = 445 - margin.left - margin.right,
+            height = 445 - margin.top - margin.bottom;
+
+        // append the svg object to the body of the page
+        const svg = d3.select("#my_dataviz")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform",
+                `translate(${margin.left}, ${margin.top})`);
+
+        // Read data
+        d3.csv('data/data_hierarchy_1level.csv').then(function (data) {
+
+            // Region Name,Sub-region Code,Sub-region Name
+
+            // stratify the data: reformatting for d3.js
+            const root = d3.stratify()
+                .id(function (d) {
+                    return d['name'];
+                })   // Name of the entity (column name is name in csv)
+                .parentId(function (d) {
+                    return d['parent'];
+                })   // Name of the parent (column name is parent in csv)
+                (data);
+            root.sum(function (d) {
+                return +d.value
+            })   // Compute the numeric value for each entity
+
+            // Then d3.treemap computes the position of each element of the hierarchy
+            // The coordinates are added to the root object above
+            d3.treemap()
+                .size([width, height])
+                .padding(2)
+                (root)
+
+            // use this information to add rectangles:
+            svg
+                .selectAll("rect")
+                .data(root.leaves())
+                .join("rect")
+                .attr('x', function (d) {
+                    return d.x0;
+                })
+                .attr('y', function (d) {
+                    return d.y0;
+                })
+                .attr('width', function (d) {
+                    return d.x1 - d.x0;
+                })
+                .attr('height', function (d) {
+                    return d.y1 - d.y0;
+                })
+                // .style("stroke", "black")
+                .style("fill", d => accent(d.data.parent)/* "#69b3a2"*/);
+
+            // and to add the text labels
+            svg
+                .selectAll("text")
+                .data(root.leaves())
+                .join("text")
+                .attr("x", function (d) {
+                    return d.x0 + 10
+                })    // +10 to adjust position (more right)
+                .attr("y", function (d) {
+                    return d.y0 + 20
+                })    // +20 to adjust position (lower)
+                .text(function (d) {
+                    return d.data.name
+                })
+                .attr("font-size", "15px")
+                .attr("fill", "white")
+                .attr("more", d => JSON.stringify(d.data))
+        })
+
+    </script>-->
+
+    <!--<script >
+var accent = d3.scaleOrdinal(d3.schemeAccent);
+// set the dimensions and margins of the graph
+const margin = {top: 10, right: 10, bottom: 10, left: 10},
+  width = 445 - margin.left - margin.right,
+  height = 445 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+const svg = d3.select("#my_dataviz")
+.append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+.append("g")
+  .attr("transform",
+        `translate(${margin.left}, ${margin.top})`);
+
+// read json data
+d3.json("data/data_dendrogram_full.json").then(function(data) {
+
+  // Give the data to this cluster layout:
+  const root = d3.hierarchy(data).sum(function(d){ return d.value}) // Here the size of each leave is given in the 'value' field in input data
+
+  // Then d3.treemap computes the position of each element of the hierarchy
+  d3.treemap()
+    .size([width, height])
+    .padding(4)
+    (root)
+
+  // use this information to add rectangles:
+  svg
+    .selectAll("rect")
+    .data(root.leaves())
+    .join("rect")
+      .attr('x', function (d) { return d.x0; })
+      .attr('y', function (d) { return d.y0; })
+      .attr('width', function (d) { return d.x1 - d.x0; })
+      .attr('height', function (d) { return d.y1 - d.y0; })
+      // .style("stroke", "black")
+      .style("fill", d => accent(d.parent.data.name))
+
+  // and to add the text labels
+  svg
+    .selectAll("text")
+    .data(root.leaves())
+    .join("text")
+      .attr("x", function(d){ return d.x0+5})    // +10 to adjust position (more right)
+      .attr("y", function(d){ return d.y0+20})    // +20 to adjust position (lower)
+      .text(function(d){ return d.data.name })
+      // .attr("tooltip", d => JSON.stringify(d))
+      .attr("font-size", "15px")
+      .attr("fill", "white")
+})
+</script>-->
+
+</div>
+</body>
+</html>

@@ -1,0 +1,8 @@
+name,parent,value
+Origin,,
+grp1,Origin,12
+grp2,Origin,23
+grp3,grp1,11
+grp4,grp2,40
+grp5,grp2,30
+grp6,grp2,25

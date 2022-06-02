@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>dc.js - Treemap Example</title>
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" type="text/css" href="../dist/style/dc.css"/>
+    <style>
+        .oversize {
+            display: none
+        }
+
+        .treemap-element {
+            stroke: black;
+            stroke-width: 0.5px
+        }
+
+        svg text {
+            font-size: 10px;
+            stroke: none
+        }
+
+        select {
+            margin-bottom: .25rem;
+        }
+
+        label {
+            display: block;
+        }
+
+        .chart-div {
+            margin-right: 20px;
+        }
+
+        .chart-div.pie {
+            width: 280px;
+        }
+
+        .page {
+            margin: 0 5rem;
+        }
+
+        #dev {
+            clear: left;
+        }
+
+        .internal .treemap-label, .root .treemap-label {
+            display: none
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <h2>dc.js Treemap Implementation</h2>
+    <div id="test"></div>
+
+    <script type="text/javascript" src="../node_modules/d3/dist/d3.js"></script>
+    <script type="text/javascript" src="../node_modules/crossfilter2/crossfilter.js"></script>
+    <script type="text/javascript" src="../dist/dc.js"></script>
+
+    <script type="text/javascript">
+        function add_chart(id, title, ctype, div_class) {
+            if (!ctype) ctype = id
+            if (!title) title = id
+            if (!div_class) div_class = ''
+
+            d3.select('#test')
+                .append('div')
+                .classed('chart-div ' + div_class, true)
+                .attr('id', id)
+                .append('h4')
+                .text(title);
+            return dc[ctype + 'Chart']('#' + id);
+        }
+
+        var tr = {
+            global: 'Global Name',
+            region: 'Region Name',
+            subregion: 'Sub-region Name',
+            intermed_region: 'Intermediate Region Name',
+            country: 'Country or Area',
+            ldc: 'Least Developed Countries (LDC)',
+            lldc: 'Land Locked Developing Countries (LLDC)',
+            sids: 'Small Island Developing States (SIDS)',
+            dev: 'Developed / Developing Countries'
+        }
+
+        d3.csv('data/countries-regions.csv', function (d) {
+            return {
+                global: d['Global Name'],
+                region: d['Region Name'],
+                subregion: d['Sub-region Name'],
+                intermed_region: d['Intermediate Region Name'],
+                country: d['Country or Area'],
+                ldc: d['Least Developed Countries (LDC)'] === 'x' ? 'Yes' : 'No',
+                lldc: d['Land Locked Developing Countries (LLDC)'] === 'x' ? 'Yes' : 'No',
+                sids: d['Small Island Developing States (SIDS)'] === 'x' ? 'Yes' : 'No',
+                dev: d['Developed / Developing Countries'] === '' ? 'N/A' : d['Developed / Developing Countries']
+            };
+        }).then(function (geo) {
+
+
+            var ndx = crossfilter(geo),
+                xf_dim = {
+                    location: ndx.dimension(d => [d.global, d.region, d.subregion, d.intermed_region, d.country])
+                }
+            Object.keys(tr).forEach(n => {
+                if (n !== 'global')
+                    xf_dim[n] = ndx.dimension(d => d[n])
+            });
+
+            var tiles = ['Binary', 'Dice', 'Slice', 'SliceDice', 'Squarify', 'Resquarify']
+            var cntrls = {}
+            cntrls.treemap_tile = d3.select('#test').append('div')
+                .append('select');
+            cntrls.treemap_tile
+                .selectAll('option')
+                .data(tiles)
+                .enter()
+                .append('option')
+                .attr('value', function (d) {
+                    return d
+                })
+                .text(function (d) {
+                    return d
+                })
+
+            var opt = ['descendants', 'leaves'];
+            cntrls.treemap_parents = d3.select('#test').append('div')
+                .append('select');
+            cntrls.treemap_parents
+                .selectAll('option')
+                .data(opt)
+                .enter()
+                .append('option')
+                .attr('value', function (d) {
+                    return d
+                })
+                .text(function (d) {
+                    return 'show all ' + d
+                })
+
+
+            var padType = ['Inner', 'Outer']
+            padType.forEach(function (n) {
+                var padding = d3.select('#test').append('div')
+                padding.append('label')
+                    .attr('for', n + 'padding')
+                    .text(n + ' padding value');
+                padding
+                    .append('text')
+                    .text(' 0 ');
+                cntrls['treemap_' + n + 'pad'] = padding
+                    .append('input')
+                    .attr('type', 'range')
+                    .attr('name', 'pad')
+                    .attr('id', n + 'padding')
+                    .attr('min', 0)
+                    .attr('max', 10)
+                    .attr('value', 2)
+                padding
+                    .append('text')
+                    .text(' 10 ');
+            });
+
+            var chart_ix = {};
+
+            chart_ix.treemap = add_chart('treemap', 'Treemap', 'treemap');
+            chart_ix.row = add_chart('row', 'Global Regions');
+            var pies = ['dev', 'ldc', 'lldc', 'sids']
+            pies.forEach(n => chart_ix[n] = add_chart(n, tr[n], 'pie', 'pie'))
+
+            var i = 0;
+
+            // set up colour scales
+            var num = xf_dim.region.group().top(Infinity).map(() => ++i)
+            var spectral = d3.schemeSpectral[num.length]
+            var spectralite = d3.schemeSpectral[num.length].map(x => d3.color(x).darker(0.2).hex())
+            var colDomain = xf_dim.region.group().top(Infinity).map(x => x.key)
+                .concat(xf_dim.region.group().top(Infinity).map(x => '_' + x.key), ['World', '_undefined'])
+
+            var specscale = d3.scaleOrdinal().domain(colDomain)
+                .range(spectral.concat(spectralite, ['#999', 'none']))
+            var colorAcc = function (d) {
+                var key = (d.key[4] ? '' : '_') + d.key[1]
+                if (d.key[1] === undefined) {
+                    return d.key[0]
+                }
+                return key
+            }
+
+            chart_ix.treemap
+                .width(1200)
+                .height(750)
+                .dimension(xf_dim.location)
+                .group(xf_dim.location.group().reduceCount())
+                .colors(specscale)
+                .colorAccessor(colorAcc)
+                .layout.tile(d3.treemapBinary)
+                .layout.padding(2)
+                .layout.leafNodesOnly(false)
+
+            chart_ix.row
+                .width(300)
+                .height(300)
+                .colorAccessor(function (d) {
+                    return specscale(d.key)
+                })
+                .colors(specscale)
+                .dimension(xf_dim.region)
+                .group(xf_dim.region.group())
+                .legend(dc.legend())
+
+            pies.forEach(function (p) {
+                chart_ix[p]
+                    .width(280)
+                    .height(250)
+                    .innerRadius(25)
+                    .dimension(xf_dim[p])
+                    .group(xf_dim[p].group())
+                    .drawPaths(true)
+                    .externalRadiusPadding(50)
+                    .externalLabels(25)
+                    .legend(dc.legend())
+            })
+
+            dc.renderAll();
+            cntrls.treemap_tile.on('change', function (e) {
+                chart_ix.treemap.layout.tile(d3['treemap' + this.value]).redraw();
+            });
+            cntrls.treemap_parents.on('change', function (e) {
+                chart_ix.treemap.layout.leafNodesOnly(this.value === 'leaves').redraw();
+            });
+            padType.forEach(function (n) {
+                cntrls['treemap_' + n + 'pad'].on('change', function (e) {
+                    chart_ix.treemap.layout['padding' + n](this.value).redraw();
+                });
+            })
+        });
+
+    </script>
+
+</div>
+</body>
+</html>

@@ -72,7 +72,7 @@ $font_sans_serif: sans-serif;
   }
 
   .selected {
-    path, circle {
+    path, circle, rect {
       stroke-width: 3;
       stroke: $color_celeste;
       fill-opacity: 1;
@@ -80,7 +80,7 @@ $font_sans_serif: sans-serif;
   }
 
   .deselected {
-    path, circle {
+    path, circle, rect {
       stroke: none;
       fill-opacity: .5;
       fill: $color_celeste;
