@@ -50,8 +50,10 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
         this._emptyTitle = 'empty';
 
         this._g = undefined;
+        this._padding = 4;
 
         this._parentAccessor = d => d.parent;
+        this._parentCreator = (key = 'N/A', parent = '') => ({key, parent});
 
         this.colorAccessor(d => this.cappedKeyAccessor(d));
 
@@ -75,8 +77,6 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
 
         this._g.append('g').attr('class', this._sliceGroupCssClass);
         this._g.append('g').attr('class', this._labelGroupCssClass);
-
-        this._padding = 2;
 
         this._drawChart();
 
@@ -104,11 +104,11 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
         // if we have data...
         if (sum(data, d => this.cappedValueAccessor(d))) {
 
-            const more = [...new Set(map(data, this.parentAccessor()))].map(p => ({key: [p || 'N/A', '__root']}));
+            const ensureParents = [...new Set(map(data, this.parentAccessor()))].map(p => this._parentCreator(p));
 
             const root = stratify()
                 .id(this.keyAccessor())
-                .parentId(this.parentAccessor())(data.concat(more).concat({key: ['__root', '']}));
+                .parentId(this.parentAccessor())(data.concat(ensureParents));
 
             root.sum(d => this.cappedValueAccessor(d));
             // augment layout
@@ -272,6 +272,22 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
             return this._parentAccessor;
         }
         this._parentAccessor = cb;
+        return this;
+    }
+
+    parentCreator (cb) {
+        if (arguments.length === 0) {
+            return this._parentCreator;
+        }
+        this._parentCreator = cb;
+        return this;
+    }
+
+    padding (val) {
+        if (arguments.length === 0) {
+            return this._padding;
+        }
+        this._padding = val;
         return this;
     }
 

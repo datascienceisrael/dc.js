@@ -41,11 +41,12 @@
                 .height(480)
                 .dimension(runDimension)
                 .group(speedSumGroup)
-                .keyAccessor(d => d.key[0])
-                .parentAccessor(d => d.key[1])
+                .keyAccessor(d => !!d.others ? d.key : d.key?.[0])
+                .parentAccessor(d => !!d.others ? '*' : d.key?.[1])
+                .parentCreator((k) => k !== '*' ? ({key: [k, '*']}) : {key:['*'], root: true})
                 .colorAccessor(d => d.key[1])
                 .colors(d3.scaleOrdinal().range(d3.schemeCategory10))
-                /*.cap(4)*/
+                .cap(14)
                 // .legend(dc.legend().highlightSelected(true))
                 // workaround for #703: not enough data is accessible through .label() to display percentages
                 .on('pretransition', function (chart) {
