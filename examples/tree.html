@@ -17,6 +17,9 @@
     <label id="cap">Cap: <input type="range" min="4" max="180" value="4">
     </label>
 
+    <label id="others">Show Others: <input type="checkbox" >
+    </label>
+
     <script type="text/javascript" src="../node_modules/d3/dist/d3.js"></script>
     <script type="text/javascript" src="../node_modules/crossfilter2/crossfilter.js"></script>
     <script type="text/javascript" src="../dist/dc.js"></script>
@@ -42,8 +45,9 @@
                 .dimension(runDimension)
                 .group(speedSumGroup)
                 .keyAccessor(d => !!d.others ? d.key : d.key?.[0])
-                .parentAccessor(d => !!d.others ? '*' : d.key?.[1])
-                .parentCreator((k) => k !== '*' ? ({key: [k, '*']}) : {key:['*'], root: true})
+                .parentAccessor(d => !!d.others ? '' : d.key?.[1])
+                .parentCreator((k, p) => ({key: [k, p]}))
+                .showOthers(false)
                 .colorAccessor(d => d.key[1])
                 .colors(d3.scaleOrdinal().range(d3.schemeCategory10))
                 .cap(14)
@@ -62,6 +66,13 @@
             if (chart.cap() !== +value) {
                 console.log(value);
                 chart.cap(+value).redraw()
+            }
+        })
+
+        d3.select('#others').on('change', ({target: {checked}}) => {
+            if (chart.showOthers() !== checked) {
+                console.log(checked ? 'show others' : 'w/o others');
+                chart.showOthers(checked).redraw()
             }
         })
 

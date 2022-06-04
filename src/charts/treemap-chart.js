@@ -51,9 +51,10 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
 
         this._g = undefined;
         this._padding = 4;
+        this._showOthers = true;
 
         this._parentAccessor = d => d.parent;
-        this._parentCreator = (key = 'N/A', parent = '') => ({key, parent});
+        this._parentCreator = (key , parent ) => ({key, parent});
 
         this.colorAccessor(d => this.cappedKeyAccessor(d));
 
@@ -98,17 +99,26 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
 
         let pieData;
 
-        const data = this.data();
+        let data = this.data();
+
+        if ( !this.showOthers()) {
+            data = data.filter( d => !d.others);
+        }
 
         // let pieData;
         // if we have data...
         if (sum(data, d => this.cappedValueAccessor(d))) {
+            const parents = new Set(map(data, (d, i) => d.others ? '*' : this.parentAccessor()(d, i, data) || '*'));
 
-            const ensureParents = [...new Set(map(data, this.parentAccessor()))].map(p => this._parentCreator(p));
+            if ( !parents.has('*') ){
+                parents.add('*');
+            }
+
+            const ensureParents = [...parents].map(p => this._parentCreator(p, p !== '*' ? '*' : ''));
 
             const root = stratify()
                 .id(this.keyAccessor())
-                .parentId(this.parentAccessor())(data.concat(ensureParents));
+                .parentId(d => d.others ? '*' : this.parentAccessor()(d))(data.concat(ensureParents));
 
             root.sum(d => this.cappedValueAccessor(d));
             // augment layout
@@ -263,10 +273,15 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
         }
     }
 
-    /**
-     * @param {String} [cb]
-     * @returns {String|TreemapChart}
-     */
+    showOthers (val) {
+        if (arguments.length === 0) {
+            return this._showOthers;
+        }
+        this._showOthers = val
+        ;
+        return this;
+    }
+
     parentAccessor (cb) {
         if (arguments.length === 0) {
             return this._parentAccessor;
