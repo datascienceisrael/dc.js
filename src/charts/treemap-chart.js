@@ -97,7 +97,7 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
         //
         // const pieLayout = this._pieLayout();
 
-        let pieData;
+        let treeData;
 
         let data = this.data();
 
@@ -124,25 +124,25 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
             // augment layout
             treemap().size([this.width(), this.height()]).padding(this._padding)(root)
 
-            pieData = root.leaves();// pieLayout(this.data());
+            treeData = root.leaves();
             this._g.classed(this._emptyCssClass, false);
         } else {
             // otherwise we'd be getting NaNs, so override
             // note: abuse others for its ignoring the value accessor
-            pieData = []; // pieLayout([{key: this._emptyTitle, value: 1, others: [this._emptyTitle]}]);
+            treeData = []; // pieLayout([{key: this._emptyTitle, value: 1, others: [this._emptyTitle]}]);
             this._g.classed(this._emptyCssClass, true);
         }
 
         if (this._g) {
             const slices = this._g.select(`g.${this._sliceGroupCssClass}`)
                 .selectAll(`g.${this._sliceCssClass}`)
-                .data(pieData);
+                .data(treeData);
 
             this._removeElements(slices);
 
-            this._createElements(slices, pieData);
+            this._createElements(slices, treeData);
 
-            this._updateElements(pieData);
+            this._updateElements(treeData);
 
             this._highlightFilter();
 
@@ -171,12 +171,9 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
 
     _createSlicePath (slicesEnter) {
         slicesEnter.append('rect')
-            .attr('fill', (d, i) => this._fill(d, i))
-            .attr('x', d => d.x0)
-            .attr('y', d => d.y0)
-            .attr('width', d => d.x1 - d.x0)
-            .attr('height', d => d.y1 - d.y0)
             .on('click', d3compat.eventHandler(d => this._onClick(d)));
+
+        slicesEnter.append('text');
 
         if (this._keyboardAccessible) {
             this._makeKeyboardAccessible(this._onClick);
@@ -198,21 +195,23 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
             .classed('highlight', whether);
     }
 
-    _updateElements (pieData, arcs) {
-        this._updateSlicePaths(pieData, arcs);
-        this._updateTitles(pieData);
+    _updateElements (treeData, arcs) {
+        this._updateSlicePaths(treeData, arcs);
+        this._updateTitles(treeData);
     }
 
     _updateSlicePaths (pieData) {
-        this._g.selectAll(`g.${this._sliceCssClass}`)
+        const slices = this._g.selectAll(`g.${this._sliceCssClass}`)
             .data(pieData)
-            .select('rect')
+            .attr('transform', d => `translate(${d.x0}, ${d.y0})`);
+
+        slices.select('rect')
             .attr('fill', (d, i) => this._fill(d, i))
-            .attr('x', d => d.x0)
-            .attr('y', d => d.y0)
             .attr('width', d => d.x1 - d.x0)
             .attr('height', d => d.y1 - d.y0);
 
+        slices.select('text')
+            .text((d, i) => this.cappedKeyAccessor(d.data));
         /*
                 const tranNodes = transition(slicePaths, this.transitionDuration(), this.transitionDelay());
 
