@@ -85,6 +85,8 @@ export class BarChart extends StackMixin {
 
         this._calculateBarWidth();
 
+        siblings = siblings?.filter(d => d.constructor === BarChart);
+
         if ( siblings?.length > 1 ){
             this._barWidth /= siblings.length+ .5;
             this.g().attr('transform', `translate(${Math.floor(i * this._barWidth)}, 0)`)
@@ -244,7 +246,10 @@ export class BarChart extends StackMixin {
     }
 
     fadeDeselectedArea (brushSelection) {
-        const bars = this.chartBodyG().selectAll('rect.bar');
+        const bars = this.chartBodyG()?.selectAll('rect.bar');
+
+        if (!bars)
+            return;
 
         if (this.isOrdinal()) {
             if (this.hasFilter()) {
