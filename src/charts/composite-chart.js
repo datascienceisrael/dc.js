@@ -148,13 +148,13 @@ export class CompositeChart extends CoordinateGridMixin {
         let ranges;
 
         if (left) {
-            lyAxisMin = this._yAxisMin();
-            lyAxisMax = this._yAxisMax();
+            lyAxisMin = this._yAxisMin() || 0;
+            lyAxisMax = this._yAxisMax() || 1;
         }
 
         if (right) {
-            ryAxisMin = this._rightYAxisMin();
-            ryAxisMax = this._rightYAxisMax();
+            ryAxisMin = this._rightYAxisMin() || 0;
+            ryAxisMax = this._rightYAxisMax() || 1;
         }
 
         if (this.alignYAxes() && left && right) {
