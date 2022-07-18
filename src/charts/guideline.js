@@ -164,7 +164,7 @@ export class Guideline {
 
     guidelineKey (guidelineKey) {
         if (!arguments.length) {
-            return this._guidelineKey || (d => d.chart.keyAccessor()(d.data));
+            return this._guidelineKey || (d => d?.chart.keyAccessor()(d?.data));
         }
         this._guidelineKey = guidelineKey;
         return this;
