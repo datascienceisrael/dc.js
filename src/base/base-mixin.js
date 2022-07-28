@@ -78,12 +78,14 @@ export class BaseMixin {
 
         this._dimension = undefined;
         this._group = undefined;
+        this._emptyRenderer = undefined;
 
         this._anchor = undefined;
         this._root = undefined;
         this._svg = undefined;
         this._isChild = undefined;
         this._isMultiple = true;
+        this._emptyCssClass = 'empty-chart';
 
         this._minWidth = 200;
         this._defaultWidthCalc = element => {
@@ -316,6 +318,14 @@ export class BaseMixin {
         }
         this._data = typeof callback === 'function' ? callback : utils.constant(callback);
         this.expireCache();
+        return this;
+    }
+
+    emptyRenderer(callback) {
+        if (!arguments.length) {
+            return this._emptyRenderer;
+        }
+        this._emptyRenderer = callback;
         return this;
     }
 
@@ -797,6 +807,11 @@ export class BaseMixin {
 
         if (this._legend) {
             this._legend.render();
+        }
+
+        if (this.emptyRenderer()){
+            this._g && this._g.call(this.emptyRenderer())
+
         }
 
         this._activateRenderlets('postRedraw');
