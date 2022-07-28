@@ -4,6 +4,8 @@ import {treemap, /*hierarchy,*/ stratify} from 'd3-hierarchy';
 import {select} from 'd3-selection';
 // import {interpolate} from 'd3-interpolate';
 
+import {color} from 'd3-color';
+
 import {CapMixin} from '../base/cap-mixin';
 import {ColorMixin} from '../base/color-mixin';
 import {BaseMixin} from '../base/base-mixin';
@@ -39,7 +41,7 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
      * @param {String} [chartGroup] - The name of the chart group this chart instance should be placed in.
      * Interaction with a chart will only trigger events and redraws within the chart's group.
      */
-    constructor (parent, chartGroup) {
+    constructor(parent, chartGroup) {
         super();
 
         this._sliceCssClass = 'tree-slice';
@@ -48,13 +50,14 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
         this._labelGroupCssClass = 'tree-label-group';
         this._emptyCssClass = 'empty-chart';
         this._emptyTitle = 'empty';
+        this._valueRenderer = null;
 
         this._g = undefined;
         this._padding = 4;
         this._showOthers = true;
 
         this._parentAccessor = d => d.parent;
-        this._parentCreator = (key , parent ) => ({key, parent});
+        this._parentCreator = (key, parent) => ({key, parent});
 
         this.colorAccessor(d => this.cappedKeyAccessor(d));
 
@@ -69,7 +72,7 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
         this.anchor(parent, chartGroup);
     }
 
-    _doRender () {
+    _doRender() {
         this.resetSvg();
 
         this._g = this.svg()
@@ -88,7 +91,7 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
     // https://github.com/d3/d3-hierarchy#stratify
     // https://d3-graph-gallery.com/graph/treemap_basic.html
 
-    _drawChart () {
+    _drawChart() {
         // set radius from chart size if none given, or if given radius is too large
         // const maxRadius = min([this.width(), this.height()]) / 2;
         // this._radius = this._givenRadius && this._givenRadius < maxRadius ? this._givenRadius : maxRadius;
@@ -101,8 +104,8 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
 
         let data = this.data();
 
-        if ( !this.showOthers()) {
-            data = data.filter( d => !d.others);
+        if (!this.showOthers()) {
+            data = data.filter(d => !d.others);
         }
 
         // let pieData;
@@ -110,7 +113,7 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
         if (sum(data, d => this.cappedValueAccessor(d))) {
             const parents = new Set(map(data, (d, i) => d.others ? '*' : this.parentAccessor()(d, i, data) || '*'));
 
-            if ( !parents.has('*') ){
+            if (!parents.has('*')) {
                 parents.add('*');
             }
 
@@ -124,7 +127,8 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
             // augment layout
             treemap().size([this.width(), this.height()]).padding(this._padding)(root)
 
-            treeData = root.leaves();
+            treeData = root.leaves().filter(d => d.value > 0);
+
             this._g.classed(this._emptyCssClass, false);
         } else {
             // otherwise we'd be getting NaNs, so override
@@ -153,7 +157,7 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
         }
     }
 
-    _createElements (slices) {
+    _createElements(slices) {
         const slicesEnter = this._createSliceNodes(slices);
 
         this._createSlicePath(slicesEnter);
@@ -161,7 +165,7 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
         this._createTitles(slicesEnter);
     }
 
-    _createSliceNodes (slices) {
+    _createSliceNodes(slices) {
         return slices
             .enter()
             .append('g')
@@ -169,11 +173,11 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
             .classed('dc-tabbable', this._keyboardAccessible);
     }
 
-    _createSlicePath (slicesEnter) {
+    _createSlicePath(slicesEnter) {
         slicesEnter.append('rect')
             .on('click', d3compat.eventHandler(d => this._onClick(d)));
 
-        slicesEnter.append('text');
+        slicesEnter.append('g').classed('value-container', true);
 
         if (this._keyboardAccessible) {
             this._makeKeyboardAccessible(this._onClick);
@@ -181,26 +185,24 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
 
     }
 
-    _createTitles (slicesEnter) {
+    _createTitles(slicesEnter) {
         if (this.renderTitle()) {
             slicesEnter.append('title').text(d => this.title()(d.data));
         }
     }
 
 
-
-
-    _highlightSlice (i, whether) {
+    _highlightSlice(i, whether) {
         this.select(`g.tree-slice._${i}`)
             .classed('highlight', whether);
     }
 
-    _updateElements (treeData, arcs) {
+    _updateElements(treeData, arcs) {
         this._updateSlicePaths(treeData, arcs);
         this._updateTitles(treeData);
     }
 
-    _updateSlicePaths (pieData) {
+    _updateSlicePaths(pieData) {
         const slices = this._g.selectAll(`g.${this._sliceCssClass}`)
             .data(pieData)
             .attr('transform', d => `translate(${d.x0}, ${d.y0})`);
@@ -210,16 +212,16 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
             .attr('width', d => d.x1 - d.x0)
             .attr('height', d => d.y1 - d.y0);
 
-        slices.select('text')
-            .text((d, i) => this.cappedKeyAccessor(d.data));
-        /*
-                const tranNodes = transition(slicePaths, this.transitionDuration(), this.transitionDelay());
 
-                tranNodes.attr('fill', (d, i) => this._fill(d, i));
-        */
+        if (this.valueRenderer()) {
+            slices.select('g.value-container')
+                .attr('transform', d => `translate(${(d.x1 - d.x0) / 2}, ${(d.y1 - d.y0) / 2})`).call(this.valueRenderer())
+
+        }
+
     }
 
-    _updateTitles (pieData) {
+    _updateTitles(pieData) {
         if (this.renderTitle()) {
             this._g.selectAll(`g.${this._sliceCssClass}`)
                 .data(pieData)
@@ -228,11 +230,11 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
         }
     }
 
-    _removeElements (slices) {
+    _removeElements(slices) {
         slices.exit().remove();
     }
 
-    _highlightFilter () {
+    _highlightFilter() {
         const chart = this;
         if (this.hasFilter()) {
             this.selectAll(`g.${this._sliceCssClass}`).each(function (d) {
@@ -249,30 +251,30 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
         }
     }
 
-    _isSelectedSlice (d) {
+    _isSelectedSlice(d) {
         return this.hasFilter(this.cappedKeyAccessor(d.data));
     }
 
-    _doRedraw () {
+    _doRedraw() {
         this._drawChart();
         return this;
     }
 
-    _sliceHasNoData (d) {
+    _sliceHasNoData(d) {
         return this.cappedValueAccessor(d) === 0;
     }
 
-    _fill (d, i) {
+    _fill(d, i) {
         return this.getColor(d.data, i);
     }
 
-    _onClick (d) {
+    _onClick(d) {
         if (this._g.attr('class') !== this._emptyCssClass) {
             this.onClick(d.data);
         }
     }
 
-    showOthers (val) {
+    showOthers(val) {
         if (arguments.length === 0) {
             return this._showOthers;
         }
@@ -281,7 +283,7 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
         return this;
     }
 
-    parentAccessor (cb) {
+    parentAccessor(cb) {
         if (arguments.length === 0) {
             return this._parentAccessor;
         }
@@ -289,7 +291,7 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
         return this;
     }
 
-    parentCreator (cb) {
+    parentCreator(cb) {
         if (arguments.length === 0) {
             return this._parentCreator;
         }
@@ -297,7 +299,7 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
         return this;
     }
 
-    padding (val) {
+    padding(val) {
         if (arguments.length === 0) {
             return this._padding;
         }
@@ -310,7 +312,7 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
      * @param {String} [title]
      * @returns {String|TreemapChart}
      */
-    emptyTitle (title) {
+    emptyTitle(title) {
         if (arguments.length === 0) {
             return this._emptyTitle;
         }
@@ -318,7 +320,15 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
         return this;
     }
 
-    legendables () {
+    valueRenderer(renderer) {
+        if (arguments.length === 0) {
+            return this._valueRenderer;
+        }
+        this._valueRenderer = renderer;
+        return this;
+    }
+
+    legendables() {
         return this.data().map((d, i) => {
             const legendable = {name: d.key, data: d.value, others: d.others, chart: this};
             legendable.color = this.getColor(d, i);
@@ -326,19 +336,19 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
         });
     }
 
-    legendHighlight (d) {
+    legendHighlight(d) {
         this._highlightSliceFromLegendable(d, true);
     }
 
-    legendReset (d) {
+    legendReset(d) {
         this._highlightSliceFromLegendable(d, false);
     }
 
-    legendToggle (d) {
+    legendToggle(d) {
         this.onClick({key: d.name, others: d.others});
     }
 
-    _highlightSliceFromLegendable (legendable, highlighted) {
+    _highlightSliceFromLegendable(legendable, highlighted) {
         this.selectAll('g.tree-slice').each(function (d) {
             if (legendable.name === d.data.key) {
                 select(this).classed('highlight', highlighted);
