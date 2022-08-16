@@ -21,6 +21,7 @@ export * from './base/margin-mixin';
 export * from './base/stack-mixin';
 
 export * from './charts/bar-chart';
+export * from './charts/horizontal-bar-chart';
 export * from './charts/box-plot';
 export * from './charts/bubble-chart';
 export * from './charts/bubble-overlay';
