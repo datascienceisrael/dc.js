@@ -1,6 +1,7 @@
 import {select} from 'd3-selection';
 
 import {StackMixin} from '../base/stack-mixin';
+import {CoordinateGridMixin} from '../base/coordinate-grid-mixin';
 import {transition} from '../core/core';
 import {constants} from '../core/constants';
 import {logger} from '../core/logger';
@@ -19,7 +20,7 @@ const LABEL_PADDING = 3;
  * - {@link https://dc-js.github.io/dc.js/crime/index.html Canadian City Crime Stats}
  * @mixes StackMixin
  */
-export class BarChart extends StackMixin {
+export class BarChart extends StackMixin(CoordinateGridMixin) {
     /**
      * Create a Bar Chart
      * @example

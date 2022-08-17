@@ -1,11 +1,17 @@
 import {select} from 'd3-selection';
-
 import {StackMixin} from '../base/stack-mixin';
+import {CoordinateGridMixin} from '../base/coordinate-grid-mixin';
+import {scaleLinear, scaleBand} from 'd3-scale';
 import {transition} from '../core/core';
 import {constants} from '../core/constants';
 import {logger} from '../core/logger';
 import {pluck, utils} from '../core/utils';
 import {d3compat} from '../core/config';
+import {map, max} from 'd3-array';
+import { units } from "../core/units";
+import {CapMixin} from "../base/cap-mixin";
+import {ColorMixin} from "../base/color-mixin";
+import {MarginMixin} from "../base/margin-mixin";
 
 const MIN_BAR_WIDTH = 1;
 const DEFAULT_GAP_BETWEEN_BARS = 2;
@@ -19,7 +25,7 @@ const LABEL_PADDING = 3;
  * - {@link https://dc-js.github.io/dc.js/crime/index.html Canadian City Crime Stats}
  * @mixes StackMixin
  */
-export class HorizontalBarChart extends StackMixin {
+export class HorizontalBarChart extends StackMixin(CapMixin(ColorMixin(MarginMixin))) {
     /**
      * Create a Bar Chart
      * @example
@@ -40,9 +46,13 @@ export class HorizontalBarChart extends StackMixin {
     constructor (parent, chartGroup) {
         super();
 
+        this._title = d => JSON.stringify(d)/* `${d.name}: ${d.y}`*/;
+        this._xUnits = units.ordinal;
         this._normalized = false;
-
+        this._x = scaleLinear();
         this._gap = DEFAULT_GAP_BETWEEN_BARS;
+        // this._y = scaleBand();
+
         this._centerBar = false;
         this._alwaysUseRounding = false;
 
@@ -67,32 +77,31 @@ export class HorizontalBarChart extends StackMixin {
     }
 
     rescale () {
+/*
         super.rescale();
         this._barWidth = undefined;
+*/
         return this;
     }
 
-    render () {
-        if (this.round() && this._centerBar && !this._alwaysUseRounding) {
-            logger.warn('By default, brush rounding is disabled if bars are centered. ' +
-                'See dc.js bar chart API documentation for details.');
-        }
+    _doRender () {
+        this.resetSvg();
 
-        return super.render();
+        this._g = this.svg()
+            .append('g')
+            .attr('transform', `translate(${this.margins().left},${this.margins().top})`);
+
+        this.plotData();
+
+        return this;
     }
 
-    plotData (i = 0, siblings = undefined) {
-        let layers = this.chartBodyG().selectAll('g.stack')
+
+    plotData (i = 0) {
+        let layers = this._g.selectAll('g.stack')
             .data(this.data());
 
-        this._calculateBarWidth();
-
-        siblings = siblings?.filter(d => d.constructor === BarChart);
-
-        if ( siblings?.length > 1 ){
-            this._barWidth /= siblings.length+ .5;
-            this.g().attr('transform', `translate(${Math.floor(i * this._barWidth)}, 0)`)
-        }
+        // this._calculateBarWidth();
 
         layers = layers
             .enter()
@@ -105,9 +114,8 @@ export class HorizontalBarChart extends StackMixin {
             const chart = this;
             const totals = [];
 
-            if ( this.normalized()){
+            /*if ( this.normalized())*/{
                 const data = layers.data();
-
 
                 data.forEach((series, i) => {
                     series.values.forEach((d, j) => {
@@ -120,7 +128,7 @@ export class HorizontalBarChart extends StackMixin {
                     })
                 });
 
-                console.log(totals)
+                // console.log(totals)
             }
 
             layers.each(function (d, i) {
@@ -128,21 +136,49 @@ export class HorizontalBarChart extends StackMixin {
 
                 chart._renderBars(layer, i, d, totals);
 
+/*
                 if (chart.renderLabel() && last === i) {
                     chart._renderLabels(layer, i, d);
                 }
+*/
             });
         }
     }
 
-    _barHeight (d, total) {
+        /**
+     * **mandatory**
+     *
+     * Get or set the x scale. The x scale can be any d3
+     * {@link https://github.com/d3/d3-scale/blob/master/README.md d3.scale} or
+     * {@link https://github.com/d3/d3-scale/blob/master/README.md#ordinal-scales ordinal scale}
+     * @see {@link https://github.com/d3/d3-scale/blob/master/README.md d3.scale}
+     * @example
+     * // set x to a linear scale
+     * chart.x(d3.scaleLinear().domain([-2500, 2500]))
+     * // set x to a time scale to generate histogram
+     * chart.x(d3.scaleTime().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))
+     * @param {d3.scale} [xScale]
+     * @returns {d3.scale|CoordinateGridMixin}
+     */
+    x(xScale) {
+        if (!arguments.length) {
+            return this._x;
+        }
+        // this._x = xScale;
+        // this._xOriginalDomain = this._x.domain();
+        this.rescale();
+        return this;
+    }
+
+/*    _barHeight (d, total) {
         if ( this.normalized() && total){
-            const ys = d3.scaleLinear().domain([0, total]).range(this.y().range())
+            const ys = scaleLinear().domain([0, total]).range(this.y().range())
             return utils.safeNumber(Math.abs(ys(d.y + d.y0) - ys(d.y0)));
         }
         return utils.safeNumber(Math.abs(this.y()(d.y + d.y0) - this.y()(d.y0)));
-    }
+    }*/
 
+/*
     _labelXPos (d) {
         let x = this.x()(d.x);
         if (!this._centerBar) {
@@ -163,7 +199,9 @@ export class HorizontalBarChart extends StackMixin {
 
         return utils.safeNumber(y - LABEL_PADDING);
     }
+*/
 
+/*
     _renderLabels (layer, layerIndex, data) {
         const labels = layer.selectAll('text.barLabel')
             .data(data.values, pluck('x'));
@@ -191,7 +229,9 @@ export class HorizontalBarChart extends StackMixin {
             .attr('height', 0)
             .remove();
     }
+*/
 
+/*
     _barXPos (d) {
         let x = this.x()(d.x);
         if (this._centerBar) {
@@ -202,24 +242,35 @@ export class HorizontalBarChart extends StackMixin {
         }
         return utils.safeNumber(x);
     }
+*/
+    isOrdinal() {
+        return true; //this.xUnits() === units.ordinal;
+    }
 
     _renderBars (layer, layerIndex, data, totals) {
         const bars = layer.selectAll('rect.bar')
             .data(data.values, pluck('x'));
+
+        // console.log(layer, data)
+
+        const ys = scaleBand().range([0, this.effectiveHeight()]).domain(map(data.values, pluck('x')))
+        ys.paddingInner(this._gap / 30);
+        const xs = scaleLinear().range([0, this.effectiveWidth()])
 
         const enter = bars.enter()
             .append('rect')
             .attr('class', 'bar')
             .classed('dc-tabbable', this._keyboardAccessible)
             .attr('fill', pluck('data', this.getColor))
-            .attr('x', d => this._barXPos(d))
-            .attr('y', this.yAxisHeight())
-            .attr('height', 0);
+            .attr('x', (d, i) => xs.domain([0, this.normalized() ? totals[i] : max(totals)])(d.y0))
+            .attr('y', d => ys(d.x))
+            .attr('height', ys.bandwidth())
+            .attr('width', 0);
 
         const barsEnterUpdate = enter.merge(bars);
 
         if (this.renderTitle()) {
-            enter.append('title').text(pluck('data', this.title(data.name)));
+            enter.append('title').text(pluck('data', this.title(data)));
         }
 
         if (this.isOrdinal()) {
@@ -236,32 +287,21 @@ export class HorizontalBarChart extends StackMixin {
         }*/
 
         transition(barsEnterUpdate, this.transitionDuration(), this.transitionDelay())
-            .attr('x', d => this._barXPos(d))
-            .attr('y', (d, i) => {
-                let y = this.y()(d.y + d.y0);
+            .attr('width', (d, i) => {
+                xs.domain([0, this.normalized() ? totals[i] : max(totals)])
 
-                if ( this.normalized()) {
-                    const ys = d3.scaleLinear().range(this.y().range()).domain([0, totals?.[i]])
-                    y = ys(d.y + d.y0);
-                }
-
-                if (d.y < 0) {
-                    y -= this._barHeight(d, totals?.[i]);
-                }
-
-                return utils.safeNumber(y);
+                return xs(d.y1) - xs(d.y0)
             })
-            .attr('width', this._barWidth)
-            .attr('height', (d, i) => this._barHeight(d, totals?.[i]))
             .attr('fill', pluck('data', this.getColor))
             .select('title').text(pluck('data', this.title(data.name)));
 
         transition(bars.exit(), this.transitionDuration(), this.transitionDelay())
-            .attr('x', d => this.x()(d.x))
-            .attr('width', this._barWidth * 0.9)
+            // .attr('x', d => this.x()(d.x))
+            // .attr('width', this._barWidth * 0.9)
             .remove();
     }
 
+/*
     _calculateBarWidth () {
         if (this._barWidth === undefined) {
             const numberOfBars = this.xUnitCount();
@@ -280,6 +320,7 @@ export class HorizontalBarChart extends StackMixin {
             }
         }
     }
+*/
 
     fadeDeselectedArea (brushSelection) {
         const bars = this.chartBodyG()?.selectAll('rect.bar');

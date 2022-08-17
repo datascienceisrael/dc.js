@@ -2,14 +2,15 @@ import {stack} from 'd3-shape';
 import {max, min} from 'd3-array';
 
 import {pluck, utils} from '../core/utils';
-import {CoordinateGridMixin} from './coordinate-grid-mixin';
+// import {CoordinateGridMixin} from './coordinate-grid-mixin';
 
 /**
  * Stack Mixin is an mixin that provides cross-chart support of stackability using d3.stack.
  * @mixin StackMixin
- * @mixes CoordinateGridMixin
+    @param {Object} Base
+    @returns {StackMixin}
  */
-export class StackMixin extends CoordinateGridMixin {
+export const StackMixin = Base => class extends Base {
     constructor () {
         super();
 
