@@ -61,7 +61,7 @@ export class TreemapChart extends CapMixin(ColorMixin(BaseMixin)) {
 
         this.colorAccessor(d => this.cappedKeyAccessor(d));
 
-        this.title(d => `${this.cappedKeyAccessor(d)}: ${this.cappedValueAccessor(d)}`);
+        this._title = d => `${this.cappedKeyAccessor(d)}: ${this.cappedValueAccessor(d)}`;
 
         // this.label(d => this.cappedKeyAccessor(d));
         // this.renderLabel(true);
