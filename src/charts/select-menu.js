@@ -36,6 +36,7 @@ export class SelectMenu extends BaseMixin {
         this._select = undefined;
         this._promptText = 'Select all';
         this._multiple = false;
+        this._defaultValue = '';
         this._promptValue = null;
         this._numberVisible = null;
 
@@ -56,11 +57,23 @@ export class SelectMenu extends BaseMixin {
         this.anchor(parent, chartGroup);
     }
 
+    defaultValue (_){
+        if ( !arguments.length ){
+            return this._defaultValue;
+        }
+
+        this._defaultValue = _;
+        return this;
+    }
+
     _doRender () {
         this.select('select').remove();
         this._select = this.root().append('select')
             .classed(SELECT_CSS_CLASS, true);
-        this._select.append('option').text(this._promptText).attr('value', '');
+
+        if ( this._defaultValue === '' ) {
+            this._select.append('option').text(this._promptText).attr('value', '');
+        }
 
         this._doRedraw();
         return this;
@@ -76,7 +89,7 @@ export class SelectMenu extends BaseMixin {
         } else if (this.hasFilter()) {
             this._select.property('value', this.filter());
         } else {
-            this._select.property('value', '');
+            this._select.property('value', this._defaultValue);
         }
         return this;
     }
