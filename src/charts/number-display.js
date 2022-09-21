@@ -160,7 +160,7 @@ export class NumberDisplay extends BaseMixin {
                         let html = null;
                         const num = chart.formatNumber()(interp(t));
                         const second = chart.formatSecondary()(secondary);
-                        if (newValue === 0 && (chart._html.none !== '')) {
+                        if (newValue === 0 && secondary === null && tertiary === null &&(chart._html.none !== '')) {
                             html = chart._html.none;
                         } else if (newValue === 1 && (chart._html.one !== '')) {
                             html = chart._html.one;
