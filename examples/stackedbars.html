@@ -310,6 +310,8 @@
             |
             <a href="javascript:incidentChart.normalized(!incidentChart.normalized()); dc.renderAll();">Toggle
                 Normalized</a>
+            |
+            <input min="0" max="20" type="range" >
         </div>
 
     </div>
@@ -317,6 +319,7 @@
     <script type="text/javascript" src="../node_modules/d3/dist/d3.js"></script>
     <script type="text/javascript" src="../node_modules/crossfilter2/crossfilter.js"></script>
     <script type="text/javascript" src="../dist/dc.js"></script>
+
     <script type="text/javascript">
         var numberFormat = d3.format(".2f");
 
@@ -514,7 +517,9 @@
                 // .seriesAccessor(d => d.key?.[1])
                 .colors(d3.scaleOrdinal().range([green, purple, darkPurple, lightPurple]))
                 // .colorAccessor(d => d.key?.[1])
-                .normalized(true)
+                .normalized(false)
+                .cap(5)
+                .ordering(d => -(d.value.nonViolentCrimeAvg+d.value.violentCrimeAvg))
                 /*.renderHorizontalGridLines(true)*/
                 // .elasticY(true)
                 // .xUnits(dc.units.ordinal)
@@ -548,6 +553,11 @@
 
             dc.renderAll();
         });
+    </script>
+
+    <script>
+
+        document.querySelector('input[type=range]').addEventListener('change', e=> {incidentChart.cap(+e.target.value).redraw();})
     </script>
 
 
