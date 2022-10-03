@@ -57,6 +57,7 @@ export class HorizontalBarChart extends StackMixin(CapMixin(ColorMixin(MarginMix
         this._alwaysUseRounding = false;
 
         this._barWidth = undefined;
+        this._fixedBarHeight = undefined;
 
         this.label(d => utils.printSingleValue(d.y0 + d.y), false);
 
@@ -109,39 +110,38 @@ export class HorizontalBarChart extends StackMixin(CapMixin(ColorMixin(MarginMix
         return this;
     }
 
-    _doRedraw () {
+    _doRedraw() {
         this.plotData();
         return this;
     }
 
 
-
     _prepare_layer_data(group) {
-            if (this._cap === Infinity) {
-                return this._computeOrderedGroups(group.all());
-            } else {
-                let items = group.all(), rest;
-                items = this._computeOrderedGroups(items); // sort by baseMixin.ordering
+        if (this._cap === Infinity) {
+            return this._computeOrderedGroups(group.all());
+        } else {
+            let items = group.all(), rest;
+            items = this._computeOrderedGroups(items); // sort by baseMixin.ordering
 
-                if (this._cap) {
-                    if (this._takeFront) {
-                        rest = items.slice(this._cap);
-                        items = items.slice(0, this._cap);
-                    } else {
-                        const start = Math.max(0, items.length - this._cap);
-                        rest = items.slice(0, start);
-                        items = items.slice(start);
-                    }
+            if (this._cap) {
+                if (this._takeFront) {
+                    rest = items.slice(this._cap);
+                    items = items.slice(0, this._cap);
+                } else {
+                    const start = Math.max(0, items.length - this._cap);
+                    rest = items.slice(0, start);
+                    items = items.slice(start);
                 }
-
-                if (this._othersGrouper) {
-                    return this._othersGrouper(items, rest);
-                }
-                return items;
             }
-        }
 
-    _prepareValues (layer, layerIdx) {
+            if (this._othersGrouper) {
+                return this._othersGrouper(items, rest);
+            }
+            return items;
+        }
+    }
+
+    _prepareValues(layer, layerIdx) {
         const valAccessor = layer.accessor || this.valueAccessor();
         layer.name = String(layer.name || layerIdx);
         const allValues = this._prepare_layer_data(layer.group)/*layer.group.all()*/.map((d, i) => ({
@@ -168,7 +168,6 @@ export class HorizontalBarChart extends StackMixin(CapMixin(ColorMixin(MarginMix
             .append('g')
             .attr('class', (d, i) => `stack _${i}`)
             .merge(layers);
-
 
 
         const last = layers.size() - 1;
@@ -309,6 +308,19 @@ export class HorizontalBarChart extends StackMixin(CapMixin(ColorMixin(MarginMix
         return true; //this.xUnits() === units.ordinal;
     }
 
+    _isSelectedRow(d) {
+        return this.hasFilter(d.x/*this.cappedKeyAccessor(d.data)*/);
+    }
+
+    fixedBarHeight(fixedBarHeight) {
+        if (!arguments.length) {
+            return this._fixedBarHeight;
+        }
+        this._fixedBarHeight = fixedBarHeight;
+        return this;
+    }
+
+
     _renderBars(layer, layerIndex, data, totals) {
         const rows = layer.selectAll('g.row')
             .data(data.values, pluck('x'));
@@ -316,37 +328,48 @@ export class HorizontalBarChart extends StackMixin(CapMixin(ColorMixin(MarginMix
         // console.log(layer, data)
         rows.exit().remove();
 
+        let barHeight = this.fixedBarHeight();
+
         const ys = scaleBand().range([0, this.effectiveHeight()]).domain(map(data.values, pluck('x')))
         ys.paddingInner(this._gap / 30);
+
+        barHeight = barHeight || ys.bandwidth();
+
         const xs = scaleLinear().range([0, this.effectiveWidth()])
 
         const enter = rows.enter()
             .append('g')
             .attr('class', 'row')
-            .attr('transform', d => `translate(0, ${ys(d.x)})`)
+            .attr('transform', (d, i) => `translate(0, ${barHeight ? (barHeight + this.gap()) * i : ys(d.x)})`)
             .classed('dc-tabbable', this._keyboardAccessible);
 
         enter.append('rect')
             .attr('fill', pluck('data', this.getColor))
             .attr('x', (d, i) => xs.domain([0, this.normalized() ? totals[i] : max(totals)])(d.y0))
-
-            .attr('height', ys.bandwidth())
+            .attr('height', barHeight)
             .attr('width', 0);
 
-        if (this.renderTitle()) {
+        if (this.renderTitle() && layerIndex === 0) {
             enter.append('text')
                 .attr('dy', 4)
                 .attr('x', 4)
-                .attr('y', ys.bandwidth()/2)
+                .attr('y', barHeight / 2)
                 .attr('opacity', 0)
                 .text(pluck('x'));
         }
 
         const barsEnterUpdate = enter.merge(rows);
 
-        if (this.isOrdinal()) {
-            barsEnterUpdate.on('click', d3compat.eventHandler(d => this.onClick(d)));
-        }
+        barsEnterUpdate
+            .selectAll('rect')
+            .on('click', d3compat.eventHandler(d => this.onClick(d)))
+            .classed('deselected', d => (this.hasFilter()) ? !this._isSelectedRow(d) : false)
+            .classed('selected', d => (this.hasFilter()) ? this._isSelectedRow(d) : false);
+
+
+        /*        if (this.isOrdinal()) {
+                    barsEnterUpdate.on('click', d3compat.eventHandler(d => this.onClick(d)));
+                }*/
 
         if (this._keyboardAccessible) {
             this._makeKeyboardAccessible(this.onClick);
@@ -358,26 +381,28 @@ export class HorizontalBarChart extends StackMixin(CapMixin(ColorMixin(MarginMix
                 }*/
 
         const transitionedBars = transition(barsEnterUpdate, this.transitionDuration(), this.transitionDelay())
-            .attr('transform', d => `translate(0, ${ys(d.x)})`)
+            .attr('transform', (d, i) => `translate(0, ${barHeight ? (barHeight + this.gap()) * i : ys(d.x)})`)
+
 
         transitionedBars
             .select('rect')
+            .attr('x', (d, i) => xs.domain([0, this.normalized() ? totals[i] : max(totals)])(d.y0))
             .attr('width', (d, i) => {
                 xs.domain([0, this.normalized() ? totals[i] : max(totals)])
 
                 return xs(d.y1) - xs(d.y0)
             })
-            .attr('height', ys.bandwidth())
+            .attr('height', barHeight)
             .attr('fill', pluck('data', this.getColor))
             .select('title').text(pluck('data', this.title(data.name)));
 
         transitionedBars
             .select('text')
-                .attr('dy', 4)
-                .attr('x', 4)
-                .attr('y', ys.bandwidth()/2)
-                .attr('opacity', 0.8)
-                .text(pluck('x'));
+            .attr('dy', 4)
+            .attr('x', 4)
+            .attr('y', barHeight / 2)
+            .attr('opacity', 1)
+            .text(pluck('x'));
 
         transition(rows.exit(), this.transitionDuration(), this.transitionDelay())
             // .attr('x', d => this.x()(d.x))
