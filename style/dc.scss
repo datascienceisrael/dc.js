@@ -191,6 +191,7 @@ $font_sans_serif: sans-serif;
         fill: $color_white;
         font-size: 12px;
         cursor: pointer;
+        pointer-events: none;
       }
     }
 
