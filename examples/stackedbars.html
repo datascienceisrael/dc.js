@@ -528,8 +528,8 @@
                 // .legend(new dc.Legend().horizontal(true).x(10).y(10).autoItemWidth(true))
                 .title(function (d) {
                     return d.key
-                        + "\nViolent crime per 100k population: " + Math.round(d.value.violentCrimeAvg)
-                        + "\nNon-Violent crime per 100k population: " + Math.round(d.value.nonViolentCrimeAvg);
+                        + "\nViolent crime/100k: " + Math.round(d.value.violentCrimeAvg)
+                        + "\nNon-Violent crime/100k: " + Math.round(d.value.nonViolentCrimeAvg);
                 })
             /*.yAxis().ticks(5)*//*.tickFormat(d3.format("d"))*/;
 

@@ -347,7 +347,8 @@ export class HorizontalBarChart extends StackMixin(CapMixin(ColorMixin(MarginMix
             .attr('fill', pluck('data', this.getColor))
             .attr('x', (d, i) => xs.domain([0, this.normalized() ? totals[i] : max(totals)])(d.y0))
             .attr('height', barHeight)
-            .attr('width', 0);
+            .attr('width', 0)
+            .append('title');
 
         if (this.renderTitle() && layerIndex === 0) {
             enter.append('text')
@@ -364,7 +365,9 @@ export class HorizontalBarChart extends StackMixin(CapMixin(ColorMixin(MarginMix
             .selectAll('rect')
             .on('click', d3compat.eventHandler(d => this.onClick(d)))
             .classed('deselected', d => (this.hasFilter()) ? !this._isSelectedRow(d) : false)
-            .classed('selected', d => (this.hasFilter()) ? this._isSelectedRow(d) : false);
+            .classed('selected', d => (this.hasFilter()) ? this._isSelectedRow(d) : false)
+            .select('title').text(pluck('data', this.title()))
+        ;
 
 
         /*        if (this.isOrdinal()) {
@@ -394,7 +397,7 @@ export class HorizontalBarChart extends StackMixin(CapMixin(ColorMixin(MarginMix
             })
             .attr('height', barHeight)
             .attr('fill', pluck('data', this.getColor))
-            .select('title').text(pluck('data', this.title(data.name)));
+            /*.select('title').text(pluck('data', this.title()))*/;
 
         transitionedBars
             .select('text')
@@ -409,6 +412,101 @@ export class HorizontalBarChart extends StackMixin(CapMixin(ColorMixin(MarginMix
             // .attr('width', this._barWidth * 0.9)
             .remove();
     }
+
+    /*_renderTitles(layer, layerIndex, data, totals) {
+        const rows = layer.selectAll('g.row')
+            .data(data.values, pluck('x'));
+
+        // console.log(layer, data)
+        rows.exit().remove();
+
+        let barHeight = this.fixedBarHeight();
+
+        const ys = scaleBand().range([0, this.effectiveHeight()]).domain(map(data.values, pluck('x')))
+        ys.paddingInner(this._gap / 30);
+
+        barHeight = barHeight || ys.bandwidth();
+
+        const xs = scaleLinear().range([0, this.effectiveWidth()])
+
+        const enter = rows.enter()
+            .append('g')
+            .attr('class', 'row')
+            .attr('transform', (d, i) => `translate(0, ${barHeight ? (barHeight + this.gap()) * i : ys(d.x)})`)
+            .classed('dc-tabbable', this._keyboardAccessible);
+
+
+
+        enter.append('rect')
+            .attr('fill', pluck('data', this.getColor))
+            .attr('x', (d, i) => xs.domain([0, this.normalized() ? totals[i] : max(totals)])(d.y0))
+            .attr('height', barHeight)
+            .attr('width', 0)
+            .append('title')
+            .text(pluck('data', this.title(data)));
+
+        if (layerIndex === 0) {
+            enter.append('text')
+                .attr('dy', 4)
+                .attr('x', 4)
+                .attr('y', barHeight / 2)
+                .attr('opacity', 0)
+                .text(pluck('x'));
+        }
+
+        const barsEnterUpdate = enter.merge(rows);
+
+        barsEnterUpdate
+            .selectAll('rect')
+            .on('click', d3compat.eventHandler(d => this.onClick(d)))
+            .classed('deselected', d => (this.hasFilter()) ? !this._isSelectedRow(d) : false)
+            .classed('selected', d => (this.hasFilter()) ? this._isSelectedRow(d) : false)
+            .selectAll('title')
+            .text(pluck('data', this.title(data)));
+
+
+        /!*        if (this.isOrdinal()) {
+                    barsEnterUpdate.on('click', d3compat.eventHandler(d => this.onClick(d)));
+                }*!/
+
+        if (this._keyboardAccessible) {
+            this._makeKeyboardAccessible(this.onClick);
+        }
+
+        /!*        if ( this.normalized()) {
+                    const domain = d3.extent(data.values, pluck('y'))
+                    this.y().domain(domain)
+                }*!/
+
+        const transitionedBars = transition(barsEnterUpdate, this.transitionDuration(), this.transitionDelay())
+            .attr('transform', (d, i) => `translate(0, ${barHeight ? (barHeight + this.gap()) * i : ys(d.x)})`)
+
+
+        transitionedBars
+            .select('rect')
+            .attr('x', (d, i) => xs.domain([0, this.normalized() ? totals[i] : max(totals)])(d.y0))
+            .attr('width', (d, i) => {
+                xs.domain([0, this.normalized() ? totals[i] : max(totals)])
+
+                return xs(d.y1) - xs(d.y0)
+            })
+            .attr('height', barHeight)
+            .attr('fill', pluck('data', this.getColor))
+            // .select('title').text(pluck('data', this.title(data.name)));
+
+        transitionedBars
+            .select('text')
+            .attr('dy', 4)
+            .attr('x', 4)
+            .attr('y', barHeight / 2)
+            .attr('opacity', 1)
+            .text(pluck('x'));
+
+        transition(rows.exit(), this.transitionDuration(), this.transitionDelay())
+            // .attr('x', d => this.x()(d.x))
+            // .attr('width', this._barWidth * 0.9)
+            .remove();
+    }*/
 
     /*
         _calculateBarWidth () {
