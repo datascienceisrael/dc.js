@@ -344,6 +344,7 @@ export class HorizontalBarChart extends StackMixin(CapMixin(ColorMixin(MarginMix
             .classed('dc-tabbable', this._keyboardAccessible);
 
         enter.append('rect')
+            .attr('class', 'bar')
             .attr('fill', pluck('data', this.getColor))
             .attr('x', (d, i) => xs.domain([0, this.normalized() ? totals[i] : max(totals)])(d.y0))
             .attr('height', barHeight)
@@ -652,14 +653,14 @@ export class HorizontalBarChart extends StackMixin(CapMixin(ColorMixin(MarginMix
         };
 
         if (!this.isLegendableHidden(d)) {
-            this.g().selectAll('rect.bar')
+            this._g.selectAll('rect.bar')
                 .classed('highlight', colorFilter(d.color))
                 .classed('fadeout', colorFilter(d.color, true));
         }
     }
 
     legendReset() {
-        this.g().selectAll('rect.bar')
+        this._g.selectAll('rect.bar')
             .classed('highlight', false)
             .classed('fadeout', false);
     }

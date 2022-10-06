@@ -232,13 +232,13 @@ $font_sans_serif: sans-serif;
   }
 
   .highlight {
-    fill-opacity: 1;
-    stroke-opacity: 1;
+    fill-opacity: 1 !important;
+    stroke-opacity: 1 !important;
   }
 
   .fadeout {
-    fill-opacity: 0.2;
-    stroke-opacity: 0.2;
+    fill-opacity: 0.2 !important;
+    stroke-opacity: 0.2 !important;
   }
 
   .box {

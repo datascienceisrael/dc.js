@@ -531,6 +531,8 @@
                         + "\nViolent crime/100k: " + Math.round(d.value.violentCrimeAvg)
                         + "\nNon-Violent crime/100k: " + Math.round(d.value.nonViolentCrimeAvg);
                 })
+
+            incidentChart.legend(dc.legend().horizontal(true));
             /*.yAxis().ticks(5)*//*.tickFormat(d3.format("d"))*/;
 
             /*            homicideChart
