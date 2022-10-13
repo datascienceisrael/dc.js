@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>dc.js - Series Chart Example</title>
+    <meta charset="UTF-8">
+    <!--
+        <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css">
+    -->
+    <link rel="stylesheet" type="text/css" href="../dist/style/dc.css"/>
+
+    <script type="text/javascript" src="../node_modules/reductio/reductio.js" ></script>
+    <script type="text/javascript" src="../node_modules/d3/dist/d3.js"></script>
+    <script type="text/javascript" src="../node_modules/crossfilter2/crossfilter.js"></script>
+    <script type="text/javascript" src="../dist/dc.js"></script>
+
+
+</head>
+<body>
+
+<div class="container">
+    <div id="test"></div>
+
+    <script type="text/javascript">
+
+        var chart = new dc.SeriesChart("#test");
+        var ndx, runDimension, runGroup;
+
+        const reducer = reductio();
+        reducer.value('All').count(true)
+
+        reducer
+            .value('Error')
+            .count(true)
+            .sum(d => +d['value'])
+            .avg(true);
+
+
+        d3.csv("data/error-per-model.csv").then(function (experiments) {
+
+            experiments.forEach(d => {
+                d.date = new Date(d.date)
+                d.week = d3.timeWeek.round(d.date);
+            })
+
+            ndx = crossfilter(experiments);
+            runDimension = ndx.dimension(function (d) {
+                // :${d.type_size}
+                return [d.geotrack, d.week];
+                // :${d.type_size}
+            });
+            runGroup = runDimension.group();
+            reducer(runGroup);
+
+            const xDomain = d3.extent(experiments, d => d.week)
+
+            console.log(xDomain.map(dt => dt.toDateString()))
+
+            chart
+                .width(768)
+                .height(480)
+                .chart(function (c) {
+                    return new dc.BarChart(c)/*.curve(d3.curveCardinal)*/;
+                })
+                .data(g => g.top(20))
+                .x(d3.scaleTime().domain(xDomain))
+                .round(d3.timeWeek.round)
+                .xUnits(d3.timeWeeks)
+                .brushOn(false)
+                .yAxisLabel("Measured Error")
+                .xAxisLabel("Date")
+                .clipPadding(10)
+                .elasticY(true)
+                .dimension(runDimension)
+                .group(runGroup)
+                // .mouseZoomable(true)
+                .seriesAccessor(function (d) {
+                    return "Model: " + d.key[0];
+                })
+                .keyAccessor(function (d) {
+                    return +d.key[1];
+                })
+                .valueAccessor(function (d) {
+                    return +d.value.Error?.avg;
+                })
+                .title(({key,value})=> `${key[0]}\n${key[1].toDateString()}\n${d3.format('.1%')(value.Error?.avg ?? 0)}`)
+                .legend(dc.legend().x(550).y(0).itemHeight(13).gap(5).horizontal(1).legendWidth(140).autoItemWidth(true));
+
+            chart.yAxis().tickFormat(function (d) {
+                return d3.format('.0%')(d);
+            });
+            chart.margins().left += 40;
+
+            dc.renderAll();
+
+        });
+
+        /*
+                function load_button(file) {
+                    return function load_it() {
+                        d3.csv(file).then(function (experiments) {
+                            ndx.remove(() => true);
+                            ndx.add(experiments);
+                            dc.redrawAll();
+                        });
+                    };
+                }
+        */
+
+        /*        var button1 = load_button("morley.csv"),
+                    button2 = load_button("morley2.csv"),
+                    button3 = load_button("morley3.csv");*/
+
+    </script>
+
+</div>
+</body>
+</html>

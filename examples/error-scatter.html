@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>dc.js - Series Scatter Plot Example</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../dist/style/dc.css"/>
+
+    <script type="text/javascript" src="../node_modules/reductio/reductio.js"></script>
+    <script type="text/javascript" src="../node_modules/d3/dist/d3.js"></script>
+    <script type="text/javascript" src="../node_modules/crossfilter2/crossfilter.js"></script>
+    <script type="text/javascript" src="../dist/dc.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+    <div id="test"></div>
+
+    <script type="text/javascript">
+
+        var chart = new dc.SeriesChart("#test");
+        var ndx, runDimension, runGroup;
+
+        const reducer = reductio();
+        reducer.value('All').count(true)
+
+        reducer
+            .value('Error')
+            .count(true)
+            .sum(d => +d['value'])
+            .avg(true);
+
+        d3.csv("data/error-per-model.csv").then(function (experiments) {
+
+            ndx = crossfilter(experiments);
+            runDimension = ndx.dimension(function (d) {
+                return [`${d.geotrack}:${d.type_size}` , /*d['type_size'],*/ new Date(d.date)];
+            });
+            runGroup = runDimension.group()/*.reduceSum(function (d) {
+                return +d.Speed;
+            })*/;
+            reducer(runGroup);
+
+            var symbolScale = d3.scaleOrdinal().range(d3.symbols);
+/*
+            var symbolAccessor = function (d) {
+                return symbolScale(d.key[0]);
+            };
+*/
+            var subChart = function (c) {
+                return new dc.ScatterPlot(c)
+                    // .symbol(symbolAccessor)
+                    .symbolSize(8)
+                    .highlightedSize(10).title(({key, value}) => `${key[0]}:${key[1].toDateString()} Error: ${value.Error.avg}`)
+            };
+
+            const xDomain = d3.extent(experiments, d => new Date(d.date))
+
+            console.log(xDomain.map(dt => dt.toDateString()))
+
+
+            chart
+                .width(768)
+                .height(480)
+                .chart(subChart)
+                .x(d3.scaleTime().domain(xDomain))
+                .round(d3.timeMonday.round)
+                .xUnits(d3.timeMondays)
+                    /*.data( g => g.top(10))*/
+
+
+                .brushOn(false)
+                .yAxisLabel("Error")
+                .xAxisLabel("Date")
+                .clipPadding(10)
+                .elasticY(true)
+                .dimension(runDimension)
+                .group(runGroup)
+                .mouseZoomable(false)
+                .shareTitle(false) // allow default scatter title to work
+                .seriesAccessor(function (d) {
+                    return d.key[0];
+                })
+                .keyAccessor(function (d) {
+                    return +d.key[1];
+                })
+                .valueAccessor(function (d) {
+                    return +d.value?.Error?.avg;
+                })
+
+                .legend(dc.legend().x(10).y(10).itemHeight(13).gap(5).legendWidth(140).autoItemWidth(true));
+
+            chart.yAxis().tickFormat(function (d) {
+                return d3.format(',d')(d + 299500);
+            });
+            chart.margins().left += 40;
+
+            dc.renderAll();
+
+        });
+
+    </script>
+</div>
+</body>
+</html>
