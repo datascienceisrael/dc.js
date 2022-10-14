@@ -1,9 +1,10 @@
 import {ascending} from 'd3-array';
-
+import {nest} from 'd3-collection';
 import {CompositeChart} from './composite-chart';
 import {lineChart} from './line-chart';
 import {utils} from '../core/utils';
 import {d3compat} from '../core/config';
+import {max, min, bisector} from 'd3-array';
 
 /**
  * A series chart is a chart that shows multiple series of data overlaid on one chart, where the
@@ -28,7 +29,7 @@ export class SeriesChart extends CompositeChart {
      * @param {String} [chartGroup] - The name of the chart group this chart instance should be placed in.
      * Interaction with a chart will only trigger events and redraws within the chart's group.
      */
-    constructor (parent, chartGroup) {
+    constructor(parent, chartGroup) {
         super(parent, chartGroup);
 
         this._keySort = (a, b) => ascending(this.keyAccessor()(a), this.keyAccessor()(b));
@@ -42,17 +43,71 @@ export class SeriesChart extends CompositeChart {
 
         this._mandatoryAttributes().push('seriesAccessor', 'chart');
         this.shareColors(true);
+
     }
 
-    _compose (subChartArray) {
+    guidelineables(dx) {
+        // console.log(this, x);
+        // do nothing in base, should be overridden by sub-function
+        // const values = this.selectAll('.dot').data();
+        // const index = bisector(d => d.x).center(values, dx);
+        // return this.selectAll('.dot').filter((_, i) => i === index);
+        const allValues = this._prepareValues();
+        // eslint-disable-next-line no-shadow
+        const result = allValues.map(({values}, i) => {
+            const index = bisector(d => d.x).center(values, dx);
+            return {
+                // color: this.getColor(values, i),
+                name,
+                index,
+                data: values[index].data,
+                chart: this
+            };
+        }) || [];
+
+        return result;
+    }
+
+    guidelineHighlight(dx) {
+        this._g.selectAll('.symbol').classed('active', false);
+
+        if (dx !== undefined) {
+            const values = this._g.selectAll('.symbol').data();
+            const index = bisector(this.keyAccessor()).center(values, dx);
+            this._g.selectAll('.symbol').filter((_, i) => i === index).classed('active', true);
+        }
+    }
+
+    _prepareValues() {
+        //         object: function(array) { return apply(array, 0, createObject, setObject); },
+        // map: function(array) { return apply(array, 0, createMap, setMap); },
+        // entries: function(array) { return entries(apply(array, 0, createMap, setMap), 0); },
+        // key: function(d) { keys.push(d); return nest; },
+        // sortKeys: function(order) { sortKeys[keys.length - 1] = order; return nest; },
+        // sortValues: function(order) { sortValues = order; return nest; },
+        // rollup: function(f) { rollup = f; return nest; }
+
+        return Array.from(d3.group(this.data(), this.seriesAccessor()))
+            .map(([key, values]) => ({
+                key, values: values.map((d, i) => ({
+                    x: this.keyAccessor()(d, i),
+                    y: this.valueAccessor()(d, i),
+                    data: d
+                }))
+            }))
+
+
+    }
+
+    _compose(subChartArray) {
         super.compose(subChartArray);
     }
 
-    compose (subChartArray) {
+    compose(subChartArray) {
         throw new Error('Not supported for this chart type');
     }
 
-    _preprocessData () {
+    _preprocessData() {
         const keep = [];
         let childrenChanged;
 
@@ -65,7 +120,7 @@ export class SeriesChart extends CompositeChart {
 
         const children =
             nesting.map((sub, i) => {
-                const subChart = this._charts[sub.key] || this._chartFunction(this, this._chartGroup , sub.key, i);
+                const subChart = this._charts[sub.key] || this._chartFunction(this, this._chartGroup, sub.key, i);
                 if (!this._charts[sub.key]) {
                     childrenChanged = true;
                 }
@@ -94,14 +149,14 @@ export class SeriesChart extends CompositeChart {
         }
     }
 
-    _clearChart (c) {
+    _clearChart(c) {
         if (this._charts[c].g()) {
             this._charts[c].g().remove();
         }
         delete this._charts[c];
     }
 
-    _resetChildren () {
+    _resetChildren() {
         Object.keys(this._charts).map(this._clearChart.bind(this));
         this._charts = {};
     }
@@ -116,7 +171,7 @@ export class SeriesChart extends CompositeChart {
      * @param {Function} [chartFunction= (anchor) =>  new LineChart(anchor)]
      * @returns {Function|SeriesChart}
      */
-    chart (chartFunction) {
+    chart(chartFunction) {
         if (!arguments.length) {
             return this._chartFunction;
         }
@@ -136,7 +191,7 @@ export class SeriesChart extends CompositeChart {
      * @param {Function} [accessor]
      * @returns {Function|SeriesChart}
      */
-    seriesAccessor (accessor) {
+    seriesAccessor(accessor) {
         if (!arguments.length) {
             return this._seriesAccessor;
         }
@@ -154,7 +209,7 @@ export class SeriesChart extends CompositeChart {
      * @param {Function} [sortFunction=d3.ascending]
      * @returns {Function|SeriesChart}
      */
-    seriesSort (sortFunction) {
+    seriesSort(sortFunction) {
         if (!arguments.length) {
             return this._seriesSort;
         }
@@ -177,7 +232,7 @@ export class SeriesChart extends CompositeChart {
      * @param {Function} [sortFunction]
      * @returns {Function|SeriesChart}
      */
-    valueSort (sortFunction) {
+    valueSort(sortFunction) {
         if (!arguments.length) {
             return this._valueSort;
         }

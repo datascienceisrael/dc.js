@@ -327,7 +327,7 @@ $font_sans_serif: sans-serif;
   pointer-events: none;
 }
 
-.dot.active {
+.dot.active, .symbol.active {
   /*r: 5;*/
   stroke-opacity: .9 !important;
   stroke-width: .4;
