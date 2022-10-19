@@ -283,14 +283,14 @@ export class Guideline {
         const items = box
             .selectAll('g.dc-guideline-item')
             .data(d => d)
-            .attr('transform', d => `translate(0, ${d.chart._y(d.chart.valueAccessor()(d.data))})`)
+            .attr('transform', (d,i) => `translate(0, ${60 +  i*(this._itemHeight + 4)/*d.chart._y(d.chart.valueAccessor()(d.data))*/})`)
         ;
 
         const itemEnter = items
                 .enter()
                 .append('g')
                 .attr('class', 'dc-guideline-item')
-                .attr('transform', d => `translate(0, ${d.chart._y(d.chart.valueAccessor()(d.data))})`)
+                .attr('transform', (d, i) => `translate(0, ${60 + i*(this._itemHeight+ 4) })`) //  ${d.chart._y(d.chart.valueAccessor()(d.data))}
 
 
 
@@ -327,6 +327,12 @@ export class Guideline {
             .attr('width', 40)
             .attr('height', () => this._itemHeight);
 
+/*        itemEnter.append('circle')
+            .attr('fill', (d,i) => d.chart?.getColor?.(d.data,i))
+            .attr('r', 4)
+            .attr('cx', (alignRight ? -1 : 1) * 10)
+            .attr('cy', 0);*/
+
 
         itemEnter.append('text')
             .text(this.guidelineText())
@@ -336,6 +342,9 @@ export class Guideline {
 
         items.select('rect')
             .attr('x', alignRight ? -40 - (this._itemHeight + LABEL_GAP) : this._itemHeight + LABEL_GAP)
+
+/*        items.select('circle')
+            .attr('cx', alignRight ? -10 : 10)*/
 
         items.select('text').text(this.guidelineText())
             .attr('text-anchor', alignRight ? 'end' : 'start')
