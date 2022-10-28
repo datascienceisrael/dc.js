@@ -1,5 +1,4 @@
-import {ascending} from 'd3-array';
-import {nest} from 'd3-collection';
+import {ascending, group} from 'd3-array';
 import {CompositeChart} from './composite-chart';
 import {lineChart} from './line-chart';
 import {utils} from '../core/utils';
@@ -87,7 +86,7 @@ export class SeriesChart extends CompositeChart {
         // sortValues: function(order) { sortValues = order; return nest; },
         // rollup: function(f) { rollup = f; return nest; }
 
-        return Array.from(d3.group(this.data(), this.seriesAccessor()))
+        return Array.from(group(this.data(), this.seriesAccessor()))
             .map(([key, values]) => ({
                 key, values: values.map((d, i) => ({
                     x: this.keyAccessor()(d, i),
