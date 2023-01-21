@@ -47,12 +47,12 @@ Promise.all([d3.csv("data/morley.csv"), d3.csv("data/morley2.csv")]).then(functi
                 .dimension(dim)
                 .colors('red')
                 .group(grp1, "Top Line")
-                .dashStyle([2,2]),
+                /*.dashStyle([2,2])*/,
             new dc.LineChart(composite)
                 .dimension(dim)
                 .colors('blue')
                 .group(grp2, "Bottom Line")
-                .dashStyle([5,5])
+                /*.dashStyle([5,5])*/
             ])
         .brushOn(false)
         .render();

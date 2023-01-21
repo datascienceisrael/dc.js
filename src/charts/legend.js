@@ -308,9 +308,10 @@ export class Legend {
                 .attr('stroke', pluck('color'));
         } else {
             itemEnter
-                .append('rect')
-                .attr('width', this._itemHeight)
-                .attr('height', this._itemHeight)
+                .append('circle')
+                .attr('r', this._itemHeight/2)
+                .attr('cx', 0)
+                .attr('cy', 0)
                 .attr('fill', d => d ? d.color : 'blue');
         }
 
